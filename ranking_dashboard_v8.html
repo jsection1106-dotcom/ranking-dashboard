@@ -164,7 +164,23 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
       <label style="margin-left:6px;">比較週：</label><select id="dashWeekCompare" onchange="renderDashboard()"><option value="">（比較なし）</option></select>
       <span id="diffLegend" class="hidden" style="font-size:10px;color:var(--text2);margin-left:6px;"><span class="diff-up">▲上昇</span>&nbsp;<span class="diff-down">▼下降</span>&nbsp;<span class="diff-new">★新</span></span>
     </div>
-    <div id="dashboardContent"><div class="no-data">データがありません。「媒体別店舗ランキング上位5」タブから入力してください。</div></div>
+    <!-- ダッシュボード内タブ -->
+    <div style="display:flex;gap:2px;margin-bottom:14px;">
+      <div id="dash-tab-all" onclick="switchDashView('all')" style="padding:5px 16px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;background:var(--accent);color:#fff;transition:all .15s;">📊 全体</div>
+      <div id="dash-tab-area" onclick="switchDashView('area')" style="padding:5px 16px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;background:var(--surface2);color:var(--text2);border:1px solid var(--border);transition:all .15s;">📍 エリア別詳細</div>
+    </div>
+    <!-- 全体表示 -->
+    <div id="dash-view-all">
+      <div id="dashboardContent"><div class="no-data">データがありません。「媒体別店舗ランキング上位5」タブから入力してください。</div></div>
+    </div>
+    <!-- エリア別詳細 -->
+    <div id="dash-view-area" style="display:none;">
+      <div class="week-bar" style="margin-bottom:12px;">
+        <label>エリア：</label>
+        <select id="dashAreaSelect" onchange="renderDashboardArea()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;"></select>
+      </div>
+      <div id="dashboardAreaContent"><div class="no-data">エリアを選択してください。</div></div>
+    </div>
   </div>
 
   <!-- 媒体別店舗ランキング上位5 -->
@@ -298,7 +314,7 @@ function showTab(name){
   });
   if(name==='urls')renderUrls();
   if(name==='input'){renderInputAreaTabs();renderInputFormContent();}
-  if(name==='dashboard')renderDashboard();
+  if(name==='dashboard'){renderDashboard();const sel=document.getElementById('dashAreaSelect');if(sel)sel.innerHTML=AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');}
   if(name==='google'){renderGoogleSection();renderGoogleView();}
   if(name==='history')renderHistory();
   if(name==='trend')renderTrend();
@@ -555,6 +571,120 @@ function renderGoogleSection(){
   document.getElementById('googleInputGrid').innerHTML=h;
 }
 
+
+
+// ===== ダッシュボード内タブ切替 =====
+let currentDashView = 'all';
+
+function switchDashView(view){
+  currentDashView = view;
+  document.getElementById('dash-view-all').style.display = view==='all' ? 'block' : 'none';
+  document.getElementById('dash-view-area').style.display = view==='area' ? 'block' : 'none';
+  document.getElementById('dash-tab-all').style.background = view==='all' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('dash-tab-all').style.color = view==='all' ? '#fff' : 'var(--text2)';
+  document.getElementById('dash-tab-area').style.background = view==='area' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('dash-tab-area').style.color = view==='area' ? '#fff' : 'var(--text2)';
+  if(view==='area'){
+    // エリアセレクトを初期化
+    const sel = document.getElementById('dashAreaSelect');
+    if(sel && !sel.innerHTML) sel.innerHTML = AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
+    renderDashboardArea();
+  }
+}
+
+function renderDashboardArea(){
+  const wk = document.getElementById('dashWeekSelect')?.value;
+  const ck = document.getElementById('dashWeekCompare')?.value;
+  const area = document.getElementById('dashAreaSelect')?.value;
+  if(!area) return;
+  const data = loadData();
+  const wd = wk ? data[wk] : null;
+  const cd = ck ? data[ck] : null;
+  const el = document.getElementById('dashboardAreaContent');
+  if(!wd){ el.innerHTML='<div class="no-data">データがありません。</div>'; return; }
+
+  const ad = wd.rankings?.[area];
+  const cad = cd?.rankings?.[area];
+  const ml = ad ? Object.keys(ad) : Object.keys(URLS[area]||{});
+
+  let h = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px;">`;
+
+  // 各媒体ブロック（大きく表示）
+  for(const media of ml){
+    const url = URLS[area]?.[media]||'';
+    const md = ad?.[media];
+    const cmd = cad?.[media];
+    const ranks = md?.ranks||[];
+    const cr = cmd?.ranks||[];
+    const my = md?.myRanks||{};
+    const cmy = cmd?.myRanks||{};
+
+    h += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:700;font-size:13px;">${media}</span>
+        ${url ? `<a href="${url}" target="_blank" class="media-url-btn">🔗 開く</a>` : ''}
+      </div>
+      <div style="padding:10px 14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+
+    for(let i=0;i<5;i++){
+      const shop = ranks[i]||'';
+      const cls = ['r1','r2','r3','r4','r5'][i];
+      let df='';
+      if(cd&&shop){const pi=cr.findIndex(s=>isSameShop(s,shop));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+      h+=`<tr style="border-bottom:1px solid rgba(48,54,61,.4);">
+        <td style="padding:6px 4px;width:28px;" class="rank-num ${cls}">${i+1}</td>
+        <td style="padding:6px 4px;font-size:13px;">${shop||'<span style="color:var(--border)">—</span>'}${df}</td>
+      </tr>`;
+    }
+
+    // 自店
+    const stores = MY_STORES[area]||[];
+    if(stores.length){
+      h+=`<tr><td colspan="2" style="padding:4px 0 0;"></td></tr>`;
+      stores.forEach((s,si)=>{
+        const mr = my[s]||'';
+        if(!mr) return;
+        let mdf='';
+        if(cd&&cmy[s]){const cur=parseInt(mr),prv=parseInt(cmy[s]);if(!isNaN(cur)&&!isNaN(prv)){if(prv>cur)mdf=`<span class="diff-up">▲${prv-cur}</span>`;else if(prv<cur)mdf=`<span class="diff-down">▼${cur-prv}</span>`;else mdf='<span class="diff-same">－</span>';}}
+        const colorClass = `my-store-${si}`;
+        h+=`<tr class="my-store-row ${colorClass}" style="border-radius:4px;">
+          <td colspan="2" style="padding:5px 8px;font-size:12px;">
+            <span style="font-size:10px;font-weight:700;color:var(--accent);">${s}</span>：<span class="my-rank-val" style="font-size:13px;">${mr}</span>${mdf}
+          </td>
+        </tr>`;
+      });
+    }
+
+    h+=`</table></div></div>`;
+  }
+
+  h+=`</div>`;
+
+  // Google検索
+  const dashGd = wd.google?.[area]||[];
+  const dashCgd = cd?.google?.[area]||[];
+  const dashKw = GOOGLE_KEYWORDS[area];
+  if(dashGd.some(v=>v)){
+    h+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);">
+        <span style="font-weight:700;font-size:13px;color:var(--accent3);">🔍 Googleワード検索（${dashKw}）</span>
+      </div>
+      <div style="padding:10px 14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+    for(let i=0;i<5;i++){
+      const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+      let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+      h+=`<tr style="border-bottom:1px solid rgba(48,54,61,.4);">
+        <td style="padding:6px 4px;width:28px;" class="rank-num ${cls}">${i+1}</td>
+        <td style="padding:6px 4px;font-size:13px;">${site||'<span style="color:var(--border)">—</span>'}${df}</td>
+      </tr>`;
+    }
+    h+=`</table></div></div>`;
+  }
+
+  el.innerHTML = h;
+}
 
 // ===== Google検索 コピペ機能 =====
 function pasteGoogleFromClipboard(area){
