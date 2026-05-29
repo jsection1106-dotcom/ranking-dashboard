@@ -129,7 +129,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 .hidden{display:none!important;}
 @media print{header,.tabs,.week-bar,.guide-box,.paste-guide,.btn,select,input,textarea,.open-all-panel,#view-input,#view-urls,#view-history{display:none!important;}body{background:#fff;color:#000;}.area-card{border:1px solid #ccc;break-inside:avoid;margin-bottom:8px;}.area-card-header{background:#f5f5f5;}.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.rank-table td,.area-name,.shop-name,.my-rank-val,.rank-num{color:#000!important;}.my-store-row{background:#e8f4ff;}.status-bar{display:none!important;}.google-view-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.google-card-kw{color:#555!important;}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="xlsx.full.min.js"></script>
 </head>
 <body>
 <header>
@@ -231,22 +231,23 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     <div id="trendContent"></div>
   </div>
 
-  <!-- Excelアップロード -->
+    <!-- Excelアップロード -->
   <div id="view-upload" class="hidden">
     <div style="background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;line-height:1.9;color:#555;">
-      <strong style="color:#1a6ed8;">📂 Excelアップロードの使い方：</strong><br>
-      ① ひな型Excelにデータを入力する<br>
-      ② 下の「ファイルを選択」で①または②のExcelをアップロード<br>
+      <strong style="color:#1a6ed8;">📂 CSVアップロードの使い方：</strong><br>
+      ① ひな型ExcelにデータをいれてCSV形式で保存（ファイル→名前を付けて保存→CSV UTF-8）<br>
+      ② 下の「ファイルを選択」でCSVをアップロード<br>
       ③ 内容を確認して「💾 ダッシュボードに取り込む」を押す<br>
-      <span style="font-size:10px;color:#888;">※ ①各媒体別ランキング と ②Google検索順位 の両方をアップロードできます（別々に）</span>
+      <span style="font-size:10px;color:#888;">※ ①各媒体別ランキング（エリアごとに1ファイル）と ②Google検索順位 をそれぞれアップロードできます</span>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
       <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
-        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">① 各媒体別ランキング</div>
-        <input type="file" id="uploadFile1" accept=".xlsx,.xls" style="font-size:11px;">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">① 各媒体別ランキング（Excel）</div>
+        <div style="font-size:10px;color:#888;margin-bottom:8px;">エリアごとに1ファイル（複数選択可）</div>
+        <input type="file" id="uploadFile1" accept=".xlsx,.xls" multiple style="font-size:11px;">
       </div>
       <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
-        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">② Google検索順位</div>
+        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">② Google検索順位（Excel）</div>
         <input type="file" id="uploadFile2" accept=".xlsx,.xls" style="font-size:11px;">
       </div>
     </div>
@@ -259,6 +260,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     </div>
     <div id="uploadStatus" style="font-size:11px;margin-top:8px;"></div>
   </div>
+
   <!-- 履歴 -->
   <div id="view-history" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -640,7 +642,7 @@ function initializeData(){
 }
 
 
-// ===== Excelアップロード =====
+// ===== CSVアップロード =====
 const AREA_MAP_UPLOAD = {
   '西船橋エリア':'西船橋','錦糸町エリア':'錦糸町','沼津エリア':'沼津',
   '千葉（栄町）エリア':'千葉','栄町（千葉）エリア':'千葉','千葉エリア':'千葉',
@@ -648,7 +650,6 @@ const AREA_MAP_UPLOAD = {
 };
 const VALID_MEDIA_UPLOAD = new Set(['シティヘブン','デリヘルタウン','風俗じゃぱん','デリヘルじゃぱん','駅ちか人気！','口コミ風俗情報局','ぴゅあらば','バナナビ']);
 const GOOGLE_AREAS_UPLOAD = ['西船橋','錦糸町','沼津','千葉','成田','木更津','神栖','水戸'];
-const GOOGLE_AREA_NAMES_UPLOAD = {'西船橋':'西船橋','錦糸町':'錦糸町','沼津':'沼津','千葉（栄町）':'千葉','栄町':'千葉','成田':'成田','木更津':'木更津','神栖':'神栖','水戸':'水戸'};
 
 let pendingUploadData = null;
 
@@ -656,11 +657,16 @@ function initUpload(){
   document.getElementById('uploadPreview').style.display='none';
   document.getElementById('uploadStatus').textContent='';
   pendingUploadData=null;
-  // イベントリスナーを設定（重複防止）
   const f1=document.getElementById('uploadFile1');
   const f2=document.getElementById('uploadFile2');
-  if(f1&&!f1._bound){f1.addEventListener('change',function(){handleUpload(this,'ranking');});f1._bound=true;}
-  if(f2&&!f2._bound){f2.addEventListener('change',function(){handleUpload(this,'google');});f2._bound=true;}
+  if(f1&&!f1._bound){
+    f1.addEventListener('change',function(){handleExcelUpload(this.files,'ranking');});
+    f1._bound=true;
+  }
+  if(f2&&!f2._bound){
+    f2.addEventListener('change',function(){handleExcelUpload(this.files,'google');});
+    f2._bound=true;
+  }
 }
 
 function cleanVal(v){
@@ -682,29 +688,253 @@ function parseRank(v){
   return m?m[1]+'位':s;
 }
 
-function excelDateToStr(val){
-  if(!val) return null;
-  // 文字列'2026-04-06'または'2026/04/06'形式
-  if(typeof val==='string' && /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(val)) return val.replace(/\//g,'-');
-  // Dateオブジェクト
-  if(val instanceof Date){
-    const y=val.getFullYear(), m=val.getMonth()+1, day=val.getDate();
-    return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  }
-  // シリアル値
-  if(typeof val==='number' && val>40000){
-    const d=new Date(Math.round((val-25569)*86400*1000));
-    const y=d.getUTCFullYear(), m=d.getUTCMonth()+1, day=d.getUTCDate();
-    return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  }
-  return null;
+function parseCsvText(text){
+  // BOM除去
+  text = text.replace(/^\uFEFF/,'');
+  const lines = text.split(/\r?\n/);
+  return lines.map(line=>{
+    // カンマ区切り（ダブルクォート対応）
+    const result=[];
+    let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    result.push(cur.trim());
+    return result;
+  }).filter(r=>r.some(v=>v));
 }
 
-function isDateVal(v){
-  if(v instanceof Date) return true;
-  if(typeof v==='number' && v>40000 && v<100000) return true;
-  if(typeof v==='string' && /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(v)) return true;
-  return false;
+function isDateRow(val){
+  if(!val) return false;
+  const s=String(val).trim();
+  return /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(s);
+}
+
+function toWeekKey(val){
+  if(!val) return null;
+  const s=String(val).trim();
+  const m=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if(!m) return null;
+  return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+}
+
+function parseRankingCsv(text, fileName){
+  // ファイル名からエリアを判定
+  let area = null;
+  for(const [key,val] of Object.entries(AREA_MAP_UPLOAD)){
+    const areaBase = key.replace('エリア','');
+    if(fileName.includes(areaBase)||fileName.includes(val)){area=val;break;}
+  }
+  // ファイル名で判定できなければ1行目から判定
+  const rows = parseCsvText(text);
+  if(!area){
+    const firstLine = rows[0]?rows[0].join(''):'';
+    for(const [key,val] of Object.entries(AREA_MAP_UPLOAD)){
+      if(firstLine.includes(key.replace('エリア',''))||firstLine.includes(val)){area=val;break;}
+    }
+  }
+  if(!area){
+    console.log('[CSV] エリア判定失敗 fileName:'+fileName);
+    return {};
+  }
+  console.log('[CSV] area:'+area+' rows:'+rows.length);
+
+  const result={};
+  // 日付行インデックスを特定
+  const dateIndices=[];
+  rows.forEach((row,i)=>{if(row[1]&&isDateRow(row[1]))dateIndices.push(i);});
+  console.log('[CSV] dateIndices:'+dateIndices);
+
+  dateIndices.forEach((di,idx)=>{
+    const wk=toWeekKey(rows[di][1]);
+    if(!wk) return;
+    const mediaNames=rows[di].slice(2,10).map(cleanVal);
+    const nextIdx=dateIndices[idx+1]??rows.length;
+
+    // 1〜5位
+    const ranks={};
+    mediaNames.forEach(m=>{if(m&&VALID_MEDIA_UPLOAD.has(m))ranks[m]=[];});
+    for(let ri=1;ri<=5;ri++){
+      const rr=rows[di+ri];
+      if(!rr) continue;
+      const lbl=cleanVal(rr[1]);
+      if(lbl===`${ri}位`){
+        mediaNames.forEach((m,ci)=>{
+          if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
+          ranks[m].push(cleanVal(rr[ci+2])||'');
+        });
+      }
+    }
+    // 自店順位
+    const myRanks={};
+    for(let j=di+6;j<nextIdx;j++){
+      const rr=rows[j];
+      if(!rr) continue;
+      if(isDateRow(rr[1])) break;
+      const sn=cleanVal(rr[1]);
+      if(!sn||['1位','2位','3位','4位','5位','検索条件','エリア',''].includes(sn)) continue;
+      const sr={};
+      mediaNames.forEach((m,ci)=>{
+        if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
+        sr[m]=parseRank(rr[ci+2]);
+      });
+      myRanks[sn]=sr;
+    }
+
+    if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
+    if(!result[wk].rankings[area]) result[wk].rankings[area]={};
+    Object.entries(ranks).forEach(([mn,shopList])=>{
+      const mr={};
+      Object.entries(myRanks).forEach(([sn,sv])=>{if(sv[mn])mr[sn]=sv[mn];});
+      result[wk].rankings[area][mn]={ranks:shopList.slice(0,5),myRanks:mr};
+    });
+  });
+  return result;
+}
+
+function parseGoogleCsv(text){
+  const rows=parseCsvText(text);
+  const result={};
+  const dateIndices=[];
+  rows.forEach((row,i)=>{if(row[1]&&isDateRow(row[1]))dateIndices.push(i);});
+
+  dateIndices.forEach((di,idx)=>{
+    const wk=toWeekKey(rows[di][1]);
+    if(!wk) return;
+    const nextIdx=dateIndices[idx+1]??rows.length;
+    const gRanks={};
+    GOOGLE_AREAS_UPLOAD.forEach(a=>gRanks[a]=[]);
+    for(let j=di+1;j<nextIdx;j++){
+      const rr=rows[j];
+      if(!rr) continue;
+      const lbl=cleanVal(rr[1]);
+      if(['1位','2位','3位','4位','5位'].includes(lbl)){
+        GOOGLE_AREAS_UPLOAD.forEach((area,ci)=>{
+          gRanks[area].push(cleanVal(rr[ci+2])||'');
+        });
+      }
+    }
+    if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
+    GOOGLE_AREAS_UPLOAD.forEach(area=>{
+      if(gRanks[area].some(v=>v)) result[wk].google[area]=gRanks[area].slice(0,5);
+    });
+  });
+  return result;
+}
+
+function handleCsvUpload(files, type){
+  const status=document.getElementById('uploadStatus');
+  if(!files||!files.length) return;
+  status.textContent='⟳ 読み込み中...';
+  status.style.color='#1a6ed8';
+  if(!pendingUploadData) pendingUploadData={};
+
+  let processed=0;
+  const total=files.length;
+
+  Array.from(files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const text=e.target.result;
+        let parsed={};
+        if(type==='ranking') parsed=parseRankingCsv(text, file.name);
+        else parsed=parseGoogleCsv(text);
+        console.log('[CSV Upload] file:'+file.name+' keys:'+Object.keys(parsed));
+
+        Object.keys(parsed).forEach(wk=>{
+          if(!pendingUploadData[wk]) pendingUploadData[wk]={date:wk,rankings:{},google:{}};
+          if(type==='ranking'){
+            Object.entries(parsed[wk].rankings||{}).forEach(([area,md])=>{
+              if(!pendingUploadData[wk].rankings[area]) pendingUploadData[wk].rankings[area]={};
+              Object.assign(pendingUploadData[wk].rankings[area],md);
+            });
+          } else {
+            Object.entries(parsed[wk].google||{}).forEach(([area,glist])=>{
+              pendingUploadData[wk].google[area]=glist;
+            });
+          }
+        });
+      }catch(err){
+        console.error('[CSV Upload] エラー:'+err.message);
+      }
+      processed++;
+      if(processed===total){
+        const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
+        if(!weeks.length){
+          status.textContent='❌ データが見つかりませんでした。CSVの形式を確認してください。';
+          status.style.color='#d93025';
+          return;
+        }
+        status.textContent=`✅ ${weeks.length}週分を読み込みました（${weeks.sort()[0]} ～ ${weeks.sort().pop()}）`;
+        status.style.color='#1e8a3a';
+        renderUploadPreview();
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
+
+function handleExcelUpload(files, type){
+  const status=document.getElementById('uploadStatus');
+  if(!files||!files.length) return;
+  if(typeof XLSX==='undefined'){
+    status.textContent='❌ SheetJSが読み込まれていません。ページを再読み込みしてください。';
+    status.style.color='#d93025';
+    return;
+  }
+  status.textContent='⟳ 読み込み中...';
+  status.style.color='#1a6ed8';
+  if(!pendingUploadData) pendingUploadData={};
+
+  let processed=0;
+  const total=files.length;
+
+  Array.from(files).forEach(function(file){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array',cellDates:false});
+        let parsed={};
+        if(type==='ranking') parsed=parseRankingExcel(wb);
+        else parsed=parseGoogleExcel(wb);
+        console.log('[Excel Upload] file:'+file.name+' keys:'+Object.keys(parsed));
+
+        Object.keys(parsed).forEach(function(wk){
+          if(!pendingUploadData[wk]) pendingUploadData[wk]={date:wk,rankings:{},google:{}};
+          if(type==='ranking'){
+            Object.entries(parsed[wk].rankings||{}).forEach(function([area,md]){
+              if(!pendingUploadData[wk].rankings[area]) pendingUploadData[wk].rankings[area]={};
+              Object.assign(pendingUploadData[wk].rankings[area],md);
+            });
+          } else {
+            Object.entries(parsed[wk].google||{}).forEach(function([area,glist]){
+              pendingUploadData[wk].google[area]=glist;
+            });
+          }
+        });
+      }catch(err){
+        console.error('[Excel Upload] エラー:'+err.message);
+      }
+      processed++;
+      if(processed===total){
+        const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
+        if(!weeks.length){
+          status.textContent='❌ データが見つかりませんでした。ひな型の形式を確認してください。';
+          status.style.color='#d93025';
+          return;
+        }
+        status.textContent='✅ '+weeks.length+'週分を読み込みました（'+weeks.sort()[0]+' ～ '+weeks.sort().pop()+'）';
+        status.style.color='#1e8a3a';
+        renderUploadPreview();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 function parseRankingExcel(wb){
@@ -713,55 +943,38 @@ function parseRankingExcel(wb){
     const area=AREA_MAP_UPLOAD[sname];
     if(!area) return;
     const ws=wb.Sheets[sname];
-    // raw:trueで生データ取得、日付はシリアル値で来る
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
-    // 日付行を特定：col[1]が数値(Excelシリアル値)またはDateオブジェクト
     const dateIndices=[];
     rows.forEach(function(row,i){
       if(!row||row[1]==null) return;
       const v=row[1];
-      // Dateオブジェクト
-      if(v instanceof Date){dateIndices.push(i);return;}
-      // 数値シリアル値（1900年以降のExcel日付）
-      if(typeof v==='number' && v>40000 && v<100000){dateIndices.push(i);return;}
+      if(typeof v==='number'&&v>40000&&v<100000) dateIndices.push(i);
     });
-    console.log('[Parse2] sheet:'+sname+' area:'+area+' dateIndices:'+dateIndices);
+    console.log('[Excel Parse] '+sname+'->'+area+' dates:'+dateIndices.length);
     dateIndices.forEach(function(di,idx){
-      const row=rows[di];
-      const raw=row[1];
-      let wk=null;
-      if(raw instanceof Date){
-        const y=raw.getFullYear(),m=raw.getMonth()+1,d=raw.getDate();
-        wk=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-      } else if(typeof raw==='number'){
-        const d=new Date(Math.round((raw-25569)*86400*1000));
-        const y=d.getUTCFullYear(),m=d.getUTCMonth()+1,day=d.getUTCDate();
-        wk=y+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-      }
-      if(!wk) return;
-      const mediaNames=(row.slice(2,10)||[]).map(function(v){return cleanVal(v);});
+      const raw=rows[di][1];
+      const d=new Date(Math.round((raw-25569)*86400*1000));
+      const wk=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+      const mediaNames=(rows[di].slice(2,10)||[]).map(cleanVal);
       const nextIdx=dateIndices[idx+1]!=null?dateIndices[idx+1]:rows.length;
-      // 1〜5位
       const ranks={};
       mediaNames.forEach(function(m){if(m&&VALID_MEDIA_UPLOAD.has(m))ranks[m]=[];});
       for(var ri=1;ri<=5;ri++){
         const rr=rows[di+ri];
         if(!rr) continue;
-        const lbl=cleanVal(rr[1]);
-        if(lbl===ri+'位'){
+        if(cleanVal(rr[1])===ri+'位'){
           mediaNames.forEach(function(m,ci){
             if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
-            ranks[m].push(cleanVal(rr[ci+2]));
+            ranks[m].push(cleanVal(rr[ci+2])||'');
           });
         }
       }
-      // 自店順位
       const myRanks={};
       for(var j=di+6;j<nextIdx;j++){
         const rr=rows[j];
         if(!rr) continue;
         const v2=rr[1];
-        if(v2 instanceof Date||(typeof v2==='number'&&v2>40000)) break;
+        if(typeof v2==='number'&&v2>40000) break;
         const sn=cleanVal(v2);
         if(!sn||['1位','2位','3位','4位','5位','検索条件','エリア',''].indexOf(sn)>=0) continue;
         const sr={};
@@ -785,96 +998,40 @@ function parseRankingExcel(wb){
 
 function parseGoogleExcel(wb){
   const result={};
-  // シート名を探す
-  const sname = wb.SheetNames.find(s=>s.includes('Google'))||wb.SheetNames[0];
+  const sname=wb.SheetNames.find(function(s){return s.includes('Google');})||wb.SheetNames[0];
   if(!sname) return result;
   const ws=wb.Sheets[sname];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:false,dateNF:'yyyy-mm-dd'});
-
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
   const dateIndices=[];
-  rows.forEach((row,i)=>{ if(row && isDateVal(row[1])) dateIndices.push(i); });
-
-  dateIndices.forEach((di,idx)=>{
-    const row=rows[di];
-    const wk=excelDateToStr(row[1]);
-    if(!wk) return;
-    const nextIdx=dateIndices[idx+1]??rows.length;
+  rows.forEach(function(row,i){
+    if(!row||row[1]==null) return;
+    const v=row[1];
+    if(typeof v==='number'&&v>40000&&v<100000) dateIndices.push(i);
+  });
+  dateIndices.forEach(function(di,idx){
+    const raw=rows[di][1];
+    const d=new Date(Math.round((raw-25569)*86400*1000));
+    const wk=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+    const nextIdx=dateIndices[idx+1]!=null?dateIndices[idx+1]:rows.length;
     const gRanks={};
-    GOOGLE_AREAS_UPLOAD.forEach(a=>gRanks[a]=[]);
-
-    for(let j=di+1;j<nextIdx;j++){
+    GOOGLE_AREAS_UPLOAD.forEach(function(a){gRanks[a]=[];});
+    for(var j=di+1;j<nextIdx;j++){
       const rr=rows[j];
       if(!rr) continue;
       const lbl=cleanVal(rr[1]);
-      if(['1位','2位','3位','4位','5位'].includes(lbl)){
-        GOOGLE_AREAS_UPLOAD.forEach((area,ci)=>{
+      if(['1位','2位','3位','4位','5位'].indexOf(lbl)>=0){
+        GOOGLE_AREAS_UPLOAD.forEach(function(area,ci){
           gRanks[area].push(cleanVal(rr[ci+2])||'');
         });
       }
     }
-
     if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
-    GOOGLE_AREAS_UPLOAD.forEach(area=>{
-      if(gRanks[area].some(v=>v)) result[wk].google[area]=gRanks[area].slice(0,5);
+    GOOGLE_AREAS_UPLOAD.forEach(function(area){
+      if(gRanks[area].some(function(v){return v;})) result[wk].google[area]=gRanks[area].slice(0,5);
     });
   });
   return result;
 }
-
-function handleUpload(input, type){
-  const file=input.files[0];
-  if(!file) return;
-  const status=document.getElementById('uploadStatus');
-  status.textContent='⟳ 読み込み中...';
-  status.style.color='#1a6ed8';
-
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
-      console.log('[Upload] SheetNames:', wb.SheetNames);
-      let parsed={};
-      if(type==='ranking') parsed=parseRankingExcel(wb);
-      else parsed=parseGoogleExcel(wb);
-      console.log('[Upload] parsed keys:', Object.keys(parsed));
-      console.log('[Upload] parsed:', JSON.stringify(parsed).slice(0,500));
-
-      const weeks=Object.keys(parsed).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
-      console.log('[Upload] weeks:', weeks);
-      if(!weeks.length){
-        status.textContent='❌ データが見つかりませんでした。ひな型の形式を確認してください。';
-        status.style.color='#d93025';
-        return;
-      }
-
-      // pendingに追加（既存のpendingとマージ）
-      if(!pendingUploadData) pendingUploadData={};
-      weeks.forEach(wk=>{
-        if(!pendingUploadData[wk]) pendingUploadData[wk]={date:wk,rankings:{},google:{}};
-        if(type==='ranking'){
-          Object.entries(parsed[wk].rankings||{}).forEach(([area,md])=>{
-            if(!pendingUploadData[wk].rankings[area]) pendingUploadData[wk].rankings[area]={};
-            Object.assign(pendingUploadData[wk].rankings[area],md);
-          });
-        } else {
-          Object.entries(parsed[wk].google||{}).forEach(([area,glist])=>{
-            pendingUploadData[wk].google[area]=glist;
-          });
-        }
-      });
-
-      status.textContent=`✅ ${weeks.length}週分を読み込みました（${weeks[0]} ～ ${weeks[weeks.length-1]}）`;
-      status.style.color='#1e8a3a';
-      renderUploadPreview();
-    }catch(err){
-      status.textContent='❌ 読み込みエラー: '+err.message;
-      status.style.color='#d93025';
-      console.error(err);
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
 function renderUploadPreview(){
   if(!pendingUploadData) return;
   const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
@@ -904,16 +1061,13 @@ function commitUpload(){
   if(!pendingUploadData) return;
   const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
   const existing=loadData();
-  // 既存データとマージ（アップロードデータ優先）
   const merged=Object.assign({},existing);
   weeks.forEach(wk=>{
     if(!merged[wk]) merged[wk]={date:wk,rankings:{},google:{}};
-    // ランキング
     Object.entries(pendingUploadData[wk].rankings||{}).forEach(([area,md])=>{
       if(!merged[wk].rankings[area]) merged[wk].rankings[area]={};
       Object.assign(merged[wk].rankings[area],md);
     });
-    // Google
     Object.entries(pendingUploadData[wk].google||{}).forEach(([area,glist])=>{
       merged[wk].google[area]=glist;
     });
@@ -921,11 +1075,10 @@ function commitUpload(){
   saveToStorage(merged);
   updateWeekSelects();
   showToast(`✅ ${weeks.length}週分のデータを取り込みました`);
-  document.getElementById('uploadStatus').textContent=`✅ ${weeks.length}週分を取り込みました。ダッシュボードに反映されています。`;
+  document.getElementById('uploadStatus').textContent=`✅ ${weeks.length}週分を取り込みました。`;
   document.getElementById('uploadStatus').style.color='#1e8a3a';
   pendingUploadData=null;
   document.getElementById('uploadPreview').style.display='none';
-  // ファイル選択をリセット
   ['uploadFile1','uploadFile2'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.value='';
