@@ -709,64 +709,74 @@ function isDateVal(v){
 
 function parseRankingExcel(wb){
   const result={};
-  wb.SheetNames.forEach(sname=>{
-    const area = AREA_MAP_UPLOAD[sname];
-    console.log('[Parse] sheet:', sname, '-> area:', area);
+  wb.SheetNames.forEach(function(sname){
+    const area=AREA_MAP_UPLOAD[sname];
     if(!area) return;
-    const ws = wb.Sheets[sname];
-    const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:false,dateNF:'yyyy-mm-dd'});
-    console.log('[Parse] rows[0]:', rows[0]);
-    console.log('[Parse] rows[1]:', rows[1]);
-    console.log('[Parse] rows[2]:', rows[2], 'row[2][1] type:', typeof rows[2]?.[1]);
-
-    // 日付行インデックスを取得
+    const ws=wb.Sheets[sname];
+    // raw:trueで生データ取得、日付はシリアル値で来る
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+    // 日付行を特定：col[1]が数値(Excelシリアル値)またはDateオブジェクト
     const dateIndices=[];
-    rows.forEach((row,i)=>{ if(row && isDateVal(row[1])) dateIndices.push(i); });
-
-    dateIndices.forEach((di,idx)=>{
+    rows.forEach(function(row,i){
+      if(!row||row[1]==null) return;
+      const v=row[1];
+      // Dateオブジェクト
+      if(v instanceof Date){dateIndices.push(i);return;}
+      // 数値シリアル値（1900年以降のExcel日付）
+      if(typeof v==='number' && v>40000 && v<100000){dateIndices.push(i);return;}
+    });
+    console.log('[Parse2] sheet:'+sname+' area:'+area+' dateIndices:'+dateIndices);
+    dateIndices.forEach(function(di,idx){
       const row=rows[di];
-      const wk=excelDateToStr(row[1]);
+      const raw=row[1];
+      let wk=null;
+      if(raw instanceof Date){
+        const y=raw.getFullYear(),m=raw.getMonth()+1,d=raw.getDate();
+        wk=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      } else if(typeof raw==='number'){
+        const d=new Date(Math.round((raw-25569)*86400*1000));
+        const y=d.getUTCFullYear(),m=d.getUTCMonth()+1,day=d.getUTCDate();
+        wk=y+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      }
       if(!wk) return;
-      const mediaNames=(row.slice(2,10)||[]).map(cleanVal);
-      const nextIdx=dateIndices[idx+1]??rows.length;
-
+      const mediaNames=(row.slice(2,10)||[]).map(function(v){return cleanVal(v);});
+      const nextIdx=dateIndices[idx+1]!=null?dateIndices[idx+1]:rows.length;
       // 1〜5位
       const ranks={};
-      mediaNames.forEach(m=>{if(m&&VALID_MEDIA_UPLOAD.has(m))ranks[m]=[];});
-      for(let ri=1;ri<=5;ri++){
+      mediaNames.forEach(function(m){if(m&&VALID_MEDIA_UPLOAD.has(m))ranks[m]=[];});
+      for(var ri=1;ri<=5;ri++){
         const rr=rows[di+ri];
         if(!rr) continue;
         const lbl=cleanVal(rr[1]);
-        if(lbl===`${ri}位`){
-          mediaNames.forEach((m,ci)=>{
+        if(lbl===ri+'位'){
+          mediaNames.forEach(function(m,ci){
             if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
             ranks[m].push(cleanVal(rr[ci+2]));
           });
         }
       }
-
       // 自店順位
       const myRanks={};
-      for(let j=di+6;j<nextIdx;j++){
+      for(var j=di+6;j<nextIdx;j++){
         const rr=rows[j];
         if(!rr) continue;
-        const sn=cleanVal(rr[1]);
-        if(!sn||['1位','2位','3位','4位','5位','検索条件','エリア',''].includes(sn)) continue;
-        if(isDateVal(rr[1])) break;
+        const v2=rr[1];
+        if(v2 instanceof Date||(typeof v2==='number'&&v2>40000)) break;
+        const sn=cleanVal(v2);
+        if(!sn||['1位','2位','3位','4位','5位','検索条件','エリア',''].indexOf(sn)>=0) continue;
         const sr={};
-        mediaNames.forEach((m,ci)=>{
+        mediaNames.forEach(function(m,ci){
           if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
           sr[m]=parseRank(rr[ci+2]);
         });
         myRanks[sn]=sr;
       }
-
       if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
       if(!result[wk].rankings[area]) result[wk].rankings[area]={};
-      Object.entries(ranks).forEach(([m,shopList])=>{
+      Object.keys(ranks).forEach(function(mn){
         const mr={};
-        Object.entries(myRanks).forEach(([sn,sv])=>{ if(sv[m]) mr[sn]=sv[m]; });
-        result[wk].rankings[area][m]={ranks:shopList.slice(0,5),myRanks:mr};
+        Object.keys(myRanks).forEach(function(sn){if(myRanks[sn][mn])mr[sn]=myRanks[sn][mn];});
+        result[wk].rankings[area][mn]={ranks:ranks[mn].slice(0,5),myRanks:mr};
       });
     });
   });
