@@ -349,6 +349,21 @@ function renderDashboard(){
       }
       h+=`</table></div>`;
     }
+    // Google検索順位を追加
+    const dashGd=wd.google?.[area]||[];
+    const dashCgd=cd?.google?.[area]||[];
+    const dashKw=GOOGLE_KEYWORDS[area];
+    if(dashGd.some(v=>v)){
+      h+=`<div class="media-block" style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">
+        <div class="media-head" style="color:var(--accent3);">🔍 Google検索（${dashKw}）</div>
+        <table class="rank-table">`;
+      for(let i=0;i<5;i++){
+        const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+        let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        h+=`<tr><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+      }
+      h+=`</table></div>`;
+    }
     h+=`</div></div>`;
   }
   h+=`</div>`;el.innerHTML=h;
@@ -665,6 +680,21 @@ function renderGoogleView(){
       const site=gd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
       let df='';if(cd&&site){const pi=cgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
       h+=`<div class="google-row"><span class="rank-num ${cls}">${i+1}</span><span class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</span></div>`;
+    }
+    // Google検索順位を追加
+    const dashGd=wd.google?.[area]||[];
+    const dashCgd=cd?.google?.[area]||[];
+    const dashKw=GOOGLE_KEYWORDS[area];
+    if(dashGd.some(v=>v)){
+      h+=`<div class="media-block" style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">
+        <div class="media-head" style="color:var(--accent3);">🔍 Google検索（${dashKw}）</div>
+        <table class="rank-table">`;
+      for(let i=0;i<5;i++){
+        const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+        let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        h+=`<tr><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+      }
+      h+=`</table></div>`;
     }
     h+=`</div></div>`;
   }
