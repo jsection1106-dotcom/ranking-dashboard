@@ -259,8 +259,8 @@ const URLS={
 };
 
 const SK='rankingDataV8';
-function loadData(){try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return{}}}
-function saveToStorage(d){localStorage.setItem(SK,JSON.stringify(d))}
+function loadData(){var local={};try{local=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){}if(window._rankingData){var merged=Object.assign({},window._rankingData);Object.keys(local).forEach(function(k){if(k!=='__initialVersion')merged[k]=local[k];});return merged;}return local;}
+function saveToStorage(d){window._rankingData=d;localStorage.setItem(SK,JSON.stringify(d));if(window._ghSaveData){window._ghSaveData(d).then(function(){showToast('✅ GitHubに保存しました');}).catch(function(e){showToast('❌ 保存失敗: '+e.message);});}}
 function formatDate(s){if(!s||s==='__initialVersion')return'';const d=new Date(s+'T00:00:00');if(isNaN(d.getTime()))return'';return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
 function getNearestMonday(){const n=new Date();const day=n.getDay();const diff=day===0?-6:1-day;const m=new Date(n);m.setDate(n.getDate()+diff);return m.toISOString().split('T')[0];}
 function getPrevWeek(s){const d=new Date(s+'T00:00:00');d.setDate(d.getDate()-7);return d.toISOString().split('T')[0];}
