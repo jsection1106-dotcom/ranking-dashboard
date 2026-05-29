@@ -391,7 +391,7 @@ function applyBulkPaste(area, text){
   // 1〜5位を入力（最初の5行）
   for(let ri=0;ri<5&&ri<dataRows.length;ri++){
     const row = dataRows[ri];
-    mediaList.forEach((media,ci){
+    mediaList.forEach((media,ci)=>{
       const el=document.getElementById(`rank_${area}_${media}_${ri+1}`);
       if(el && ci<row.length) el.value=row[ci]||'';
     });
