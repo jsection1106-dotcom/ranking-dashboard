@@ -13,13 +13,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .header-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .date-display{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);background:rgba(63,185,80,.1);padding:3px 8px;border-radius:4px;border:1px solid rgba(63,185,80,.3);}
 .btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
-.btn-primary{background:var(--accent);color:#0d1117;border-color:var(--accent);}
+.btn-primary{background:var(--accent);color:#ffffff;border-color:var(--accent);}
 .btn-primary:hover{background:#79c0ff;}
-.btn-success{background:var(--accent3);color:#0d1117;border-color:var(--accent3);}
+.btn-success{background:var(--accent3);color:#ffffff;border-color:var(--accent3);}
 .btn-success:hover{background:#56d364;}
-.btn-orange{background:#e3a517;color:#0d1117;border-color:#e3a517;}
+.btn-orange{background:#e3a517;color:#ffffff;border-color:#e3a517;}
 .btn-orange:hover{background:#f0b429;}
-.btn-purple{background:var(--accent4);color:#0d1117;border-color:var(--accent4);}
+.btn-purple{background:var(--accent4);color:#ffffff;border-color:var(--accent4);}
 .btn-purple:hover{background:#e2c4ff;}
 .btn-ghost{background:transparent;color:var(--text2);border-color:var(--border);}
 .btn-ghost:hover{background:var(--surface2);color:var(--text);}
@@ -31,7 +31,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .main{padding:12px 16px;}
 .tabs{display:flex;gap:2px;margin-bottom:14px;background:var(--surface);padding:3px;border-radius:8px;border:1px solid var(--border);flex-wrap:wrap;}
 .tab{padding:5px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap;}
-.tab.active{background:var(--accent);color:#0d1117;}
+.tab.active{background:var(--accent);color:#ffffff;}
 .tab:hover:not(.active){color:var(--text);background:var(--surface2);}
 .week-bar{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .week-bar label{font-size:11px;color:var(--text2);}
@@ -177,7 +177,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
       <label>集計週（月曜日）：</label><input type="date" id="inputWeekDate" onchange="renderInputFormContent()">
       <button class="btn btn-ghost" onclick="copyFromPrevWeek()">📋 前週コピー</button>
       <button class="btn btn-ghost" onclick="clearForm()">🗑️ クリア</button>
-      <button class="btn btn-primary" onclick="saveData()">💾 保存してダッシュボードに反映</button>
+      <button class="btn btn-primary" onclick="saveData()">💾 手入力を保存</button>
     </div>
     <div class="input-area-tabs" id="inputAreaTabs"></div>
     <div id="inputFormContent"></div>
@@ -415,7 +415,23 @@ function applyBulkPaste(area, text){
     myCount++;
   });
   
-  showToast(`✅ ${area}：${rankCount}行分のランキングと自店順位${myCount}店分を貼り付けました`);
+  // 貼り付けと同時に自動保存
+  const wk=document.getElementById('inputWeekDate')?.value;
+  if(wk){
+    const data=loadData();
+    if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};
+    const wd=data[wk];
+    if(!wd.rankings[area])wd.rankings[area]={};
+    for(const media of Object.keys(URLS[area])){
+      const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`rank_${area}_${media}_${r}`);ranks.push(el?el.value.trim():'');}
+      const myRanks={};for(const s of MY_STORES[area]||[]){const k=s.replace(/\s/g,'_');const el=document.getElementById(`myrank_${area}_${media}_${k}`);if(el)myRanks[s]=el.value.trim();}
+      wd.rankings[area][media]={ranks,myRanks};
+    }
+    saveToStorage(data);updateWeekSelects();
+    showToast(`✅ ${area}：貼り付けて保存しました`);
+  } else {
+    showToast(`✅ ${area}：貼り付けました（集計週を選択して保存してください）`);
+  }
 }
 
 function pasteFromClipboard(area, media){
@@ -456,7 +472,7 @@ function renderInputFormContent(){
   let h=`<div class="input-section">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
     <div class="section-title">📺 ${area}：各媒体店舗ランキング</div>
-    <button class="btn btn-purple" onclick="pasteBulk('${area}')">📋 全媒体まとめて貼り付け</button>
+    <button class="btn btn-purple" onclick="pasteBulk('${area}')">📋 全媒体まとめて貼り付け</button><span style="font-size:10px;color:var(--text2);margin-left:6px;">※ 貼り付けと同時に自動保存されます</span>
   </div>
   <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
     💡 Excelでこのエリアの日付行の次（1位〜自店順位まで）を全列選択してCtrl+C → 「📋 全媒体まとめて貼り付け」
@@ -481,15 +497,15 @@ function renderInputFormContent(){
 function saveData(){
   const wk=document.getElementById('inputWeekDate')?.value;if(!wk){showToast('集計週を選択してください');return;}
   const data=loadData();if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};const wd=data[wk];
-  for(const area of AREAS){
-    if(!wd.rankings[area])wd.rankings[area]={};
-    for(const media of Object.keys(URLS[area])){
-      const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`rank_${area}_${media}_${r}`);ranks.push(el?el.value.trim():'');}
-      const myRanks={};for(const s of MY_STORES[area]||[]){const k=s.replace(/\s/g,'_');const el=document.getElementById(`myrank_${area}_${media}_${k}`);if(el)myRanks[s]=el.value.trim();}
-      wd.rankings[area][media]={ranks,myRanks};
-    }
+  // 現在表示中のエリアのみ保存（他のエリアは既存データを保持）
+  const area=currentInputArea;
+  if(!wd.rankings[area])wd.rankings[area]={};
+  for(const media of Object.keys(URLS[area])){
+    const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`rank_${area}_${media}_${r}`);ranks.push(el?el.value.trim():'');}
+    const myRanks={};for(const s of MY_STORES[area]||[]){const k=s.replace(/\s/g,'_');const el=document.getElementById(`myrank_${area}_${media}_${k}`);if(el)myRanks[s]=el.value.trim();}
+    wd.rankings[area][media]={ranks,myRanks};
   }
-  saveToStorage(data);updateWeekSelects();showToast('✅ 保存しました！');
+  saveToStorage(data);updateWeekSelects();showToast(`✅ ${area} を保存しました！`);
 }
 function clearForm(){if(!confirm('現在のエリアの入力をクリアしますか？'))return;document.querySelectorAll('#inputFormContent input[type=text]').forEach(e=>e.value='');}
 function copyFromPrevWeek(){
