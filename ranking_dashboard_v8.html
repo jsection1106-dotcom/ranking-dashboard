@@ -189,6 +189,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
   <div id="view-google" class="hidden">
     <div class="week-bar">
       <label>集計週：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
+      <button class="btn btn-ghost" onclick="copyGoogleFromPrevWeek()">📋 前週コピー</button>
       <button class="btn btn-primary" onclick="saveGoogleData()">💾 Google検索順位を保存</button>
       <label style="margin-left:10px;">表示：</label><select id="googleWeekSelect" onchange="renderGoogleView()"></select>
       <label style="margin-left:6px;">比較：</label><select id="googleWeekCompare" onchange="renderGoogleView()"><option value="">（比較なし）</option></select>
@@ -514,6 +515,28 @@ function pasteGoogleFromClipboard(area){
     }
     if(filled)showToast(`✅ ${filled}件入力しました`);
   });
+}
+
+
+function copyGoogleFromPrevWeek(){
+  const wk=document.getElementById('googleInputWeekDate')?.value;
+  if(!wk){showToast('集計週を選択してください');return;}
+  const pk=getPrevWeek(wk);
+  let allData={};
+  try{allData=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
+  const prevData=allData[pk];
+  if(!prevData||!prevData.google){
+    showToast('前週('+pk+')のGoogle検索データがありません');return;
+  }
+  // 前週のgoogleデータを入力フォームに反映
+  AREAS.forEach(area=>{
+    const glist=prevData.google[area]||[];
+    for(let r=1;r<=5;r++){
+      const el=document.getElementById('ginput_'+area+'_'+r);
+      if(el) el.value=glist[r-1]||'';
+    }
+  });
+  showToast('📋 '+formatDate(pk)+' のGoogle検索データをコピーしました');
 }
 
 function saveGoogleData(){
