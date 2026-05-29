@@ -684,10 +684,8 @@ function parseRank(v){
 
 function excelDateToStr(val){
   if(!val) return null;
-  // 文字列'2026-04-06'形式
-  if(typeof val==='string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-  // 文字列'2026/04/06'形式
-  if(typeof val==='string' && /^\d{4}\/\d{2}\/\d{2}$/.test(val)) return val.replace(/\//g,'-');
+  // 文字列'2026-04-06'または'2026/04/06'形式
+  if(typeof val==='string' && /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(val)) return val.replace(/\//g,'-');
   // Dateオブジェクト
   if(val instanceof Date){
     const y=val.getFullYear(), m=val.getMonth()+1, day=val.getDate();
@@ -705,8 +703,7 @@ function excelDateToStr(val){
 function isDateVal(v){
   if(v instanceof Date) return true;
   if(typeof v==='number' && v>40000 && v<100000) return true;
-  // raw:false時は'2026-04-06'形式の文字列になる
-  if(typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return true;
+  if(typeof v==='string' && /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(v)) return true;
   return false;
 }
 
