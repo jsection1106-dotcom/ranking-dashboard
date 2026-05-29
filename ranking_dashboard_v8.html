@@ -243,11 +243,11 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
       <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
         <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">① 各媒体別ランキング</div>
-        <input type="file" id="uploadFile1" accept=".xlsx,.xls" onchange="handleUpload(this,'ranking')" style="font-size:11px;">
+        <input type="file" id="uploadFile1" accept=".xlsx,.xls" style="font-size:11px;">
       </div>
       <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
         <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">② Google検索順位</div>
-        <input type="file" id="uploadFile2" accept=".xlsx,.xls" onchange="handleUpload(this,'google')" style="font-size:11px;">
+        <input type="file" id="uploadFile2" accept=".xlsx,.xls" style="font-size:11px;">
       </div>
     </div>
     <div id="uploadPreview" style="display:none;">
@@ -656,6 +656,11 @@ function initUpload(){
   document.getElementById('uploadPreview').style.display='none';
   document.getElementById('uploadStatus').textContent='';
   pendingUploadData=null;
+  // イベントリスナーを設定（重複防止）
+  const f1=document.getElementById('uploadFile1');
+  const f2=document.getElementById('uploadFile2');
+  if(f1&&!f1._bound){f1.addEventListener('change',function(){handleUpload(this,'ranking');});f1._bound=true;}
+  if(f2&&!f2._bound){f2.addEventListener('change',function(){handleUpload(this,'google');});f2._bound=true;}
 }
 
 function cleanVal(v){
