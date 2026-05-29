@@ -166,13 +166,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 
   <!-- 媒体別店舗ランキング上位5 -->
   <div id="view-input" class="hidden">
-    <div class="paste-guide">
-      <strong>📋 Excelからコピペする方法：</strong><br>
-      ① Excelで1位〜5位の店舗名が入ったセルを縦に選択してコピー（Ctrl+C）<br>
-      ② 入力したい媒体ブロックの <strong style="color:var(--accent4);">📋 貼り付け</strong> ボタンを押す → 自動で1〜5位に入力されます<br>
-      ③ 自店順位は手入力してから「💾 保存」ボタンを押してください<br>
-      <span style="color:var(--text2);font-size:10px;">※ Excelのセルを縦1列（5行）コピーするとそのまま1〜5位に入ります。横コピーも対応（タブ区切り）。</span>
-    </div>
+    
     <div class="week-bar">
       <label>集計週（月曜日）：</label><input type="date" id="inputWeekDate" onchange="renderInputFormContent()">
       <button class="btn btn-ghost" onclick="copyFromPrevWeek()">📋 前週コピー</button>
