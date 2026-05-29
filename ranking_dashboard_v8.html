@@ -182,7 +182,8 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     <div class="week-bar">
       <label>集計週：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
       <button class="btn btn-ghost" onclick="copyGoogleFromPrevWeek()">📋 前週コピー</button>
-      <button class="btn btn-primary" onclick="saveGoogleData()">💾 Google検索順位を保存</button>
+      <button class="btn btn-ghost" onclick="clearGoogleForm()">🗑️ クリア</button>
+      <button class="btn btn-primary" onclick="saveGoogleData()">💾 手入力を保存</button>
       <label style="margin-left:10px;">表示：</label><select id="googleWeekSelect" onchange="renderGoogleView()"></select>
       <label style="margin-left:6px;">比較：</label><select id="googleWeekCompare" onchange="renderGoogleView()"><option value="">（比較なし）</option></select>
     </div>
@@ -605,6 +606,17 @@ function applyGoogleBulkPaste(text){
   } else {
     showToast(`✅ Google検索：貼り付けました（集計週を選択して保存してください）`);
   }
+}
+
+
+function clearGoogleForm(){
+  if(!confirm('現在のGoogle検索入力をクリアしますか？')) return;
+  AREAS.forEach(area=>{
+    for(let r=1;r<=5;r++){
+      const el=document.getElementById(`ginput_${area}_${r}`);
+      if(el) el.value='';
+    }
+  });
 }
 
 function copyGoogleFromPrevWeek(){
