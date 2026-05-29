@@ -709,9 +709,13 @@ function parseRankingExcel(wb){
   const result={};
   wb.SheetNames.forEach(sname=>{
     const area = AREA_MAP_UPLOAD[sname];
+    console.log('[Parse] sheet:', sname, '-> area:', area);
     if(!area) return;
     const ws = wb.Sheets[sname];
     const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:false,dateNF:'yyyy-mm-dd'});
+    console.log('[Parse] rows[0]:', rows[0]);
+    console.log('[Parse] rows[1]:', rows[1]);
+    console.log('[Parse] rows[2]:', rows[2], 'row[2][1] type:', typeof rows[2]?.[1]);
 
     // 日付行インデックスを取得
     const dateIndices=[];
@@ -816,11 +820,15 @@ function handleUpload(input, type){
   reader.onload=e=>{
     try{
       const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+      console.log('[Upload] SheetNames:', wb.SheetNames);
       let parsed={};
       if(type==='ranking') parsed=parseRankingExcel(wb);
       else parsed=parseGoogleExcel(wb);
+      console.log('[Upload] parsed keys:', Object.keys(parsed));
+      console.log('[Upload] parsed:', JSON.stringify(parsed).slice(0,500));
 
       const weeks=Object.keys(parsed).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+      console.log('[Upload] weeks:', weeks);
       if(!weeks.length){
         status.textContent='❌ データが見つかりませんでした。ひな型の形式を確認してください。';
         status.style.color='#d93025';
