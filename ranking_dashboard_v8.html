@@ -129,6 +129,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 .hidden{display:none!important;}
 @media print{header,.tabs,.week-bar,.guide-box,.paste-guide,.btn,select,input,textarea,.open-all-panel,#view-input,#view-urls,#view-history{display:none!important;}body{background:#fff;color:#000;}.area-card{border:1px solid #ccc;break-inside:avoid;margin-bottom:8px;}.area-card-header{background:#f5f5f5;}.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.rank-table td,.area-name,.shop-name,.my-rank-val,.rank-num{color:#000!important;}.my-store-row{background:#e8f4ff;}.status-bar{display:none!important;}.google-view-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.google-card-kw{color:#555!important;}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <header>
@@ -151,6 +152,8 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     <div class="tab" id="tab-google" onclick="showTab('google')">🔍 Googleワード検索上位5（CP求人サイトのみ）</div>
     <div class="tab" id="tab-urls" onclick="showTab('urls')">🔗 URL一覧</div>
     <div class="tab" id="tab-history" onclick="showTab('history')">📅 履歴</div>
+    <div class="tab" id="tab-trend" onclick="showTab('trend')">📈 推移分析</div>
+    <div class="tab" id="tab-upload" onclick="showTab('upload')">📂 Excelアップロード</div>
   </div>
 
   <!-- ダッシュボード -->
@@ -210,6 +213,51 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     </div>
   </div>
 
+
+  <!-- 推移分析 -->
+  <div id="view-trend" class="hidden">
+    <div class="week-bar" style="flex-wrap:wrap;gap:8px;">
+      <label>エリア：</label>
+      <select id="trendAreaSelect" onchange="renderTrend()"></select>
+      <label style="margin-left:6px;">媒体：</label>
+      <select id="trendMediaSelect" onchange="renderTrend()"></select>
+      <label style="margin-left:6px;">集計：</label>
+      <select id="trendModeSelect" onchange="renderTrend()">
+        <option value="weekly">週次</option>
+        <option value="monthly">月次</option>
+      </select>
+    </div>
+    <div id="trendContent"></div>
+  </div>
+
+  <!-- Excelアップロード -->
+  <div id="view-upload" class="hidden">
+    <div style="background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;line-height:1.9;color:#555;">
+      <strong style="color:#1a6ed8;">📂 Excelアップロードの使い方：</strong><br>
+      ① ひな型Excelにデータを入力する<br>
+      ② 下の「ファイルを選択」で①または②のExcelをアップロード<br>
+      ③ 内容を確認して「💾 ダッシュボードに取り込む」を押す<br>
+      <span style="font-size:10px;color:#888;">※ ①各媒体別ランキング と ②Google検索順位 の両方をアップロードできます（別々に）</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">① 各媒体別ランキング</div>
+        <input type="file" id="uploadFile1" accept=".xlsx,.xls" onchange="handleUpload(this,'ranking')" style="font-size:11px;">
+      </div>
+      <div style="background:#f5f5f5;border:2px dashed #d0d0d0;border-radius:8px;padding:16px 20px;flex:1;min-width:220px;text-align:center;">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6e;margin-bottom:8px;">② Google検索順位</div>
+        <input type="file" id="uploadFile2" accept=".xlsx,.xls" onchange="handleUpload(this,'google')" style="font-size:11px;">
+      </div>
+    </div>
+    <div id="uploadPreview" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div style="font-size:12px;font-weight:700;color:#1a1a1a;">📋 取り込み内容プレビュー</div>
+        <button class="btn btn-primary" onclick="commitUpload()">💾 ダッシュボードに取り込む</button>
+      </div>
+      <div id="uploadPreviewContent"></div>
+    </div>
+    <div id="uploadStatus" style="font-size:11px;margin-top:8px;"></div>
+  </div>
   <!-- 履歴 -->
   <div id="view-history" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -274,7 +322,7 @@ function initCurrentDate(){
 }
 
 function showTab(name){
-  ['dashboard','input','google','urls','history'].forEach(t=>{
+  ['dashboard','input','google','urls','history','trend','upload'].forEach(t=>{
     document.getElementById('view-'+t).classList.toggle('hidden',t!==name);
     document.getElementById('tab-'+t).classList.toggle('active',t===name);
   });
@@ -283,6 +331,8 @@ function showTab(name){
   if(name==='dashboard')renderDashboard();
   if(name==='google'){renderGoogleSection();renderGoogleView();}
   if(name==='history')renderHistory();
+  if(name==='trend')renderTrend();
+  if(name==='upload')initUpload();
 }
 
 function updateWeekSelects(){
@@ -565,8 +615,482 @@ function initializeData(){
     localStorage.setItem('rankingInitVer','v2');
   }
 }
+
+
+// ===== Excelアップロード =====
+const AREA_MAP_UPLOAD = {
+  '西船橋エリア':'西船橋','錦糸町エリア':'錦糸町','沼津エリア':'沼津',
+  '千葉（栄町）エリア':'千葉','栄町（千葉）エリア':'千葉',
+  '成田エリア':'成田','木更津エリア':'木更津','神栖エリア':'神栖','水戸エリア':'水戸'
+};
+const VALID_MEDIA_UPLOAD = new Set(['シティヘブン','デリヘルタウン','風俗じゃぱん','デリヘルじゃぱん','駅ちか人気！','口コミ風俗情報局','ぴゅあらば','バナナビ']);
+const GOOGLE_AREAS_UPLOAD = ['西船橋','錦糸町','沼津','千葉','成田','木更津','神栖','水戸'];
+const GOOGLE_AREA_NAMES_UPLOAD = {'西船橋':'西船橋','錦糸町':'錦糸町','沼津':'沼津','千葉（栄町）':'千葉','栄町':'千葉','成田':'成田','木更津':'木更津','神栖':'神栖','水戸':'水戸'};
+
+let pendingUploadData = null;
+
+function initUpload(){
+  document.getElementById('uploadPreview').style.display='none';
+  document.getElementById('uploadStatus').textContent='';
+  pendingUploadData=null;
+}
+
+function cleanVal(v){
+  if(v==null) return '';
+  let s=String(v).trim().replace(/\u3000/g,' ').replace(/\n/g,' ');
+  s=s.replace(/\s*\d+位[：:].+$/,'').trim();
+  return (s==='-'||s==='None'||s==='nan')?'':s;
+}
+
+function parseRank(v){
+  if(v==null) return '';
+  let s=String(v).trim();
+  if(!s||s==='-'||s==='None') return '';
+  if(s.includes('ランク外')) return 'ランク外';
+  if(s.includes('→')) s=s.split('→').pop().trim();
+  const n=parseInt(s);
+  if(!isNaN(n)) return n+'位';
+  const m=s.match(/(\d+)位/);
+  return m?m[1]+'位':s;
+}
+
+function excelDateToStr(val){
+  // Excelの日付シリアル値またはDateオブジェクトを'YYYY-MM-DD'に変換
+  if(typeof val === 'number'){
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    const y=d.getUTCFullYear(), m=d.getUTCMonth()+1, day=d.getUTCDate();
+    return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+  if(val instanceof Date){
+    const y=val.getFullYear(), m=val.getMonth()+1, day=val.getDate();
+    return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+  return null;
+}
+
+function isDateVal(v){
+  if(v instanceof Date) return true;
+  if(typeof v==='number' && v>40000 && v<100000) return true;
+  return false;
+}
+
+function parseRankingExcel(wb){
+  const result={};
+  wb.SheetNames.forEach(sname=>{
+    const area = AREA_MAP_UPLOAD[sname];
+    if(!area) return;
+    const ws = wb.Sheets[sname];
+    const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+
+    // 日付行インデックスを取得
+    const dateIndices=[];
+    rows.forEach((row,i)=>{ if(row && isDateVal(row[1])) dateIndices.push(i); });
+
+    dateIndices.forEach((di,idx)=>{
+      const row=rows[di];
+      const wk=excelDateToStr(row[1]);
+      if(!wk) return;
+      const mediaNames=(row.slice(2,10)||[]).map(cleanVal);
+      const nextIdx=dateIndices[idx+1]??rows.length;
+
+      // 1〜5位
+      const ranks={};
+      mediaNames.forEach(m=>{if(m&&VALID_MEDIA_UPLOAD.has(m))ranks[m]=[];});
+      for(let ri=1;ri<=5;ri++){
+        const rr=rows[di+ri];
+        if(!rr) continue;
+        const lbl=cleanVal(rr[1]);
+        if(lbl===`${ri}位`){
+          mediaNames.forEach((m,ci)=>{
+            if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
+            ranks[m].push(cleanVal(rr[ci+2]));
+          });
+        }
+      }
+
+      // 自店順位
+      const myRanks={};
+      for(let j=di+6;j<nextIdx;j++){
+        const rr=rows[j];
+        if(!rr) continue;
+        const sn=cleanVal(rr[1]);
+        if(!sn||['1位','2位','3位','4位','5位','検索条件','エリア',''].includes(sn)) continue;
+        if(isDateVal(rr[1])) break;
+        const sr={};
+        mediaNames.forEach((m,ci)=>{
+          if(!m||!VALID_MEDIA_UPLOAD.has(m)) return;
+          sr[m]=parseRank(rr[ci+2]);
+        });
+        myRanks[sn]=sr;
+      }
+
+      if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
+      if(!result[wk].rankings[area]) result[wk].rankings[area]={};
+      Object.entries(ranks).forEach(([m,shopList])=>{
+        const mr={};
+        Object.entries(myRanks).forEach(([sn,sv])=>{ if(sv[m]) mr[sn]=sv[m]; });
+        result[wk].rankings[area][m]={ranks:shopList.slice(0,5),myRanks:mr};
+      });
+    });
+  });
+  return result;
+}
+
+function parseGoogleExcel(wb){
+  const result={};
+  // シート名を探す
+  const sname = wb.SheetNames.find(s=>s.includes('Google'))||wb.SheetNames[0];
+  if(!sname) return result;
+  const ws=wb.Sheets[sname];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+
+  const dateIndices=[];
+  rows.forEach((row,i)=>{ if(row && isDateVal(row[1])) dateIndices.push(i); });
+
+  dateIndices.forEach((di,idx)=>{
+    const row=rows[di];
+    const wk=excelDateToStr(row[1]);
+    if(!wk) return;
+    const nextIdx=dateIndices[idx+1]??rows.length;
+    const gRanks={};
+    GOOGLE_AREAS_UPLOAD.forEach(a=>gRanks[a]=[]);
+
+    for(let j=di+1;j<nextIdx;j++){
+      const rr=rows[j];
+      if(!rr) continue;
+      const lbl=cleanVal(rr[1]);
+      if(['1位','2位','3位','4位','5位'].includes(lbl)){
+        GOOGLE_AREAS_UPLOAD.forEach((area,ci)=>{
+          gRanks[area].push(cleanVal(rr[ci+2])||'');
+        });
+      }
+    }
+
+    if(!result[wk]) result[wk]={date:wk,rankings:{},google:{}};
+    GOOGLE_AREAS_UPLOAD.forEach(area=>{
+      if(gRanks[area].some(v=>v)) result[wk].google[area]=gRanks[area].slice(0,5);
+    });
+  });
+  return result;
+}
+
+function handleUpload(input, type){
+  const file=input.files[0];
+  if(!file) return;
+  const status=document.getElementById('uploadStatus');
+  status.textContent='⟳ 読み込み中...';
+  status.style.color='#1a6ed8';
+
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+      let parsed={};
+      if(type==='ranking') parsed=parseRankingExcel(wb);
+      else parsed=parseGoogleExcel(wb);
+
+      const weeks=Object.keys(parsed).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+      if(!weeks.length){
+        status.textContent='❌ データが見つかりませんでした。ひな型の形式を確認してください。';
+        status.style.color='#d93025';
+        return;
+      }
+
+      // pendingに追加（既存のpendingとマージ）
+      if(!pendingUploadData) pendingUploadData={};
+      weeks.forEach(wk=>{
+        if(!pendingUploadData[wk]) pendingUploadData[wk]={date:wk,rankings:{},google:{}};
+        if(type==='ranking'){
+          Object.entries(parsed[wk].rankings||{}).forEach(([area,md])=>{
+            if(!pendingUploadData[wk].rankings[area]) pendingUploadData[wk].rankings[area]={};
+            Object.assign(pendingUploadData[wk].rankings[area],md);
+          });
+        } else {
+          Object.entries(parsed[wk].google||{}).forEach(([area,glist])=>{
+            pendingUploadData[wk].google[area]=glist;
+          });
+        }
+      });
+
+      status.textContent=`✅ ${weeks.length}週分を読み込みました（${weeks[0]} ～ ${weeks[weeks.length-1]}）`;
+      status.style.color='#1e8a3a';
+      renderUploadPreview();
+    }catch(err){
+      status.textContent='❌ 読み込みエラー: '+err.message;
+      status.style.color='#d93025';
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderUploadPreview(){
+  if(!pendingUploadData) return;
+  const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  let html=`<table style="width:100%;border-collapse:collapse;font-size:11px;">
+    <thead><tr style="background:#1a3a6e;color:#fff;">
+      <th style="padding:6px 8px;text-align:left;">週</th>
+      <th style="padding:6px 8px;text-align:center;">媒体ランキング</th>
+      <th style="padding:6px 8px;text-align:center;">Google検索</th>
+    </tr></thead><tbody>`;
+  weeks.forEach((wk,i)=>{
+    const d=pendingUploadData[wk];
+    const rAreas=Object.keys(d.rankings||{}).length;
+    const gAreas=Object.keys(d.google||{}).filter(a=>d.google[a]?.some(v=>v)).length;
+    const bg=i%2===0?'#f9f9f9':'#fff';
+    html+=`<tr style="background:${bg};">
+      <td style="padding:5px 8px;font-weight:600;">${formatDate(wk)}</td>
+      <td style="padding:5px 8px;text-align:center;">${rAreas>0?`✅ ${rAreas}エリア`:'−'}</td>
+      <td style="padding:5px 8px;text-align:center;">${gAreas>0?`✅ ${gAreas}エリア`:'−'}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('uploadPreviewContent').innerHTML=html;
+  document.getElementById('uploadPreview').style.display='block';
+}
+
+function commitUpload(){
+  if(!pendingUploadData) return;
+  const weeks=Object.keys(pendingUploadData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
+  const existing=loadData();
+  // 既存データとマージ（アップロードデータ優先）
+  const merged=Object.assign({},existing);
+  weeks.forEach(wk=>{
+    if(!merged[wk]) merged[wk]={date:wk,rankings:{},google:{}};
+    // ランキング
+    Object.entries(pendingUploadData[wk].rankings||{}).forEach(([area,md])=>{
+      if(!merged[wk].rankings[area]) merged[wk].rankings[area]={};
+      Object.assign(merged[wk].rankings[area],md);
+    });
+    // Google
+    Object.entries(pendingUploadData[wk].google||{}).forEach(([area,glist])=>{
+      merged[wk].google[area]=glist;
+    });
+  });
+  saveToStorage(merged);
+  updateWeekSelects();
+  showToast(`✅ ${weeks.length}週分のデータを取り込みました`);
+  document.getElementById('uploadStatus').textContent=`✅ ${weeks.length}週分を取り込みました。ダッシュボードに反映されています。`;
+  document.getElementById('uploadStatus').style.color='#1e8a3a';
+  pendingUploadData=null;
+  document.getElementById('uploadPreview').style.display='none';
+  // ファイル選択をリセット
+  ['uploadFile1','uploadFile2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+// ===== 推移分析 =====
+
+function initTrendSelects(){
+  const areaEl=document.getElementById('trendAreaSelect');
+  const mediaEl=document.getElementById('trendMediaSelect');
+  if(!areaEl||!mediaEl) return;
+  areaEl.innerHTML=AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const area=areaEl.value||AREAS[0];
+  const mediaList=Object.keys(URLS[area]||{});
+  mediaEl.innerHTML=mediaList.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function renderTrend(){
+  const areaEl=document.getElementById('trendAreaSelect');
+  const mediaEl=document.getElementById('trendMediaSelect');
+  const modeEl=document.getElementById('trendModeSelect');
+  if(!areaEl) return;
+
+  // エリア変更時に媒体リストを更新
+  const area=areaEl.value||AREAS[0];
+  const mediaList=Object.keys(URLS[area]||{});
+  if(mediaEl){
+    const cur=mediaEl.value;
+    mediaEl.innerHTML=mediaList.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+  }
+  const media=mediaEl?mediaEl.value:mediaList[0];
+  const mode=modeEl?modeEl.value:'weekly';
+
+  const data=loadData();
+  const allWeeks=Object.keys(data).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  if(!allWeeks.length){
+    document.getElementById('trendContent').innerHTML='<div class="no-data">データがありません。</div>';
+    return;
+  }
+
+  // 週次データ収集
+  const weeklyData=allWeeks.map(wk=>{
+    const md=data[wk]?.rankings?.[area]?.[media];
+    return {wk, ranks:md?.ranks||[], myRanks:md?.myRanks||{}};
+  });
+
+  // 競合店抽出：各媒体の平均順位が高い（数値が小さい）上位2店舗
+  const shopScores={};
+  weeklyData.forEach(({ranks})=>{
+    ranks.forEach((shop,i)=>{
+      if(!shop) return;
+      if(!shopScores[shop]) shopScores[shop]={total:0,count:0};
+      shopScores[shop].total+=(i+1);
+      shopScores[shop].count++;
+    });
+  });
+  // 自店を除外
+  const myStores=MY_STORES[area]||[];
+  const rivals=Object.entries(shopScores)
+    .filter(([s])=>!myStores.includes(s))
+    .map(([s,v])=>({shop:s,avg:v.total/v.count,count:v.count}))
+    .sort((a,b)=>a.avg-b.avg||b.count-a.count)
+    .slice(0,2)
+    .map(v=>v.shop);
+
+  // 月次集計の場合：月曜日基準で月ごとにまとめる
+  let periods=[];
+  if(mode==='monthly'){
+    const monthMap={};
+    weeklyData.forEach(({wk,ranks,myRanks})=>{
+      const ym=wk.slice(0,7); // YYYY-MM
+      if(!monthMap[ym]) monthMap[ym]={wk:ym,ranksList:[],myRanksList:{}};
+      monthMap[ym].ranksList.push(ranks);
+      myStores.forEach(s=>{
+        if(!monthMap[ym].myRanksList[s]) monthMap[ym].myRanksList[s]=[];
+        const r=myRanks[s];
+        if(r){const n=parseInt(r);if(!isNaN(n))monthMap[ym].myRanksList[s].push(n);}
+      });
+    });
+    periods=Object.entries(monthMap).sort().map(([ym,v])=>{
+      // 月平均順位を計算
+      const avgRanks={};
+      [...myStores,...rivals].forEach(shop=>{
+        if(myStores.includes(shop)){
+          const arr=v.myRanksList[shop]||[];
+          avgRanks[shop]=arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10:null;
+        } else {
+          const scores=[];
+          v.ranksList.forEach(ranks=>{const idx=ranks.indexOf(shop);if(idx>=0)scores.push(idx+1);});
+          avgRanks[shop]=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;
+        }
+      });
+      return {label:ym,avgRanks};
+    });
+  } else {
+    periods=weeklyData.map(({wk,ranks,myRanks})=>{
+      const avgRanks={};
+      myStores.forEach(s=>{
+        const r=myRanks[s];
+        if(r){const n=parseInt(r);avgRanks[s]=isNaN(n)?null:n;}else avgRanks[s]=null;
+      });
+      rivals.forEach(shop=>{
+        const idx=ranks.indexOf(shop);
+        avgRanks[shop]=idx>=0?idx+1:null;
+      });
+      return {label:wk.slice(5),avgRanks};
+    });
+  }
+
+  // 色定義
+  const COLORS={};
+  const palette=['#58a6ff','#3fb950','#f78166','#d2a8ff','#ffd700','#2dd4bf'];
+  const allShops=[...myStores,...rivals];
+  allShops.forEach((s,i)=>COLORS[s]=palette[i%palette.length]);
+
+  // SVGグラフ描画
+  const svgW=680, svgH=280, padL=50, padR=20, padT=20, padB=60;
+  const chartW=svgW-padL-padR;
+  const chartH=svgH-padT-padB;
+  const maxRank=6;
+
+  const xStep=periods.length>1?chartW/(periods.length-1):chartW/2;
+
+  function xPos(i){return padL+(periods.length>1?i*xStep:chartW/2);}
+  function yPos(rank){return padT+((rank-1)/(maxRank-1))*chartH;}
+
+  let svg=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${svgW}px;background:#fff;border-radius:8px;border:1px solid #d0d0d0;">`;
+
+  // グリッド線（1〜5位）
+  for(let r=1;r<=5;r++){
+    const y=yPos(r);
+    svg+=`<line x1="${padL}" y1="${y}" x2="${svgW-padR}" y2="${y}" stroke="#e0e0e0" stroke-width="0.5"/>`;
+    svg+=`<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#888">${r}位</text>`;
+  }
+
+  // X軸ラベル
+  periods.forEach(({label},i)=>{
+    const x=xPos(i);
+    svg+=`<text x="${x}" y="${svgH-padB+16}" text-anchor="middle" font-size="9" fill="#555">${label}</text>`;
+  });
+
+  // 各店舗の折れ線
+  allShops.forEach(shop=>{
+    const color=COLORS[shop];
+    const points=periods.map(({avgRanks},i)=>({x:xPos(i),y:avgRanks[shop]?yPos(avgRanks[shop]):null}));
+    // 線
+    let d='';
+    points.forEach((p,i)=>{
+      if(p.y===null) return;
+      if(d===''||points[i-1]?.y===null) d+=`M${p.x},${p.y}`;
+      else d+=`L${p.x},${p.y}`;
+    });
+    if(d) svg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    // 点
+    points.forEach(p=>{
+      if(p.y===null) return;
+      const isMyStore=myStores.includes(shop);
+      svg+=`<circle cx="${p.x}" cy="${p.y}" r="${isMyStore?5:4}" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+  });
+
+  // 凡例
+  const legendY=svgH-padB+32;
+  let legendX=padL;
+  allShops.forEach(shop=>{
+    const isMyStore=myStores.includes(shop);
+    const label=isMyStore?`★${shop}`:`${shop}（競合）`;
+    svg+=`<rect x="${legendX}" y="${legendY}" width="10" height="10" fill="${COLORS[shop]}" rx="2"/>`;
+    svg+=`<text x="${legendX+13}" y="${legendY+9}" font-size="9" fill="#333">${label}</text>`;
+    legendX+=Math.min(label.length*7+20, 180);
+  });
+
+  svg+=`</svg>`;
+
+  // テーブル
+  let table=`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;">`;
+  table+=`<thead><tr style="background:#1a3a6e;color:#fff;">`;
+  table+=`<th style="padding:6px 8px;text-align:left;">期間</th>`;
+  allShops.forEach(shop=>{
+    const isMyStore=myStores.includes(shop);
+    table+=`<th style="padding:6px 8px;text-align:center;${isMyStore?'background:#1a5276;':''}">${isMyStore?'★':''} ${shop}</th>`;
+  });
+  table+=`</tr></thead><tbody>`;
+  periods.forEach(({label,avgRanks},idx)=>{
+    const bg=idx%2===0?'#f9f9f9':'#fff';
+    table+=`<tr style="background:${bg};">`;
+    table+=`<td style="padding:5px 8px;font-weight:600;color:#333;">${label}</td>`;
+    allShops.forEach(shop=>{
+      const r=avgRanks[shop];
+      const isMyStore=myStores.includes(shop);
+      const bg2=isMyStore?'rgba(26,110,216,0.06)':'';
+      const val=r?`${r}位`:'−';
+      table+=`<td style="padding:5px 8px;text-align:center;background:${bg2};color:${r&&r<=2?'#d93025':r&&r<=3?'#e3a517':'#333'};">${val}</td>`;
+    });
+    table+=`</tr>`;
+  });
+  table+=`</tbody></table>`;
+
+  // 競合説明
+  const rivalDesc=rivals.length?
+    `<div style="font-size:10px;color:#555;margin-bottom:8px;">競合（自動抽出）：${rivals.map(r=>`<strong>${r}</strong>`).join('、')}　※平均順位が最も高い上位2店舗</div>`
+    :'<div style="font-size:10px;color:#888;margin-bottom:8px;">競合店データ不足（データが蓄積されると自動抽出されます）</div>';
+
+  const titleLabel=mode==='monthly'?'月次平均順位推移':'週次順位推移';
+  document.getElementById('trendContent').innerHTML=`
+    <div style="background:#fff;border:1px solid #d0d0d0;border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">📈 ${area} / ${media} ${titleLabel}</div>
+      ${rivalDesc}
+      ${svg}
+      ${table}
+    </div>`;
+}
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
-initializeData();initCurrentDate();updateWeekSelects();renderDashboard();
+initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
 </script>
 </body>
 </html>
