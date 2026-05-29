@@ -406,7 +406,17 @@ function saveData(){
 function clearForm(){if(!confirm('現在のエリアの入力をクリアしますか？'))return;document.querySelectorAll('#inputFormContent input[type=text]').forEach(e=>e.value='');}
 function copyFromPrevWeek(){
   const wk=document.getElementById('inputWeekDate')?.value;if(!wk){showToast('集計週を選択してください');return;}
-  const pk=getPrevWeek(wk);const data=loadData();const pd=data[pk];
+  const pk=getPrevWeek(wk);
+  // まずlocalStorage、なければwindow._rankingDataから探す
+  let data=loadData();
+  let pd=data[pk];
+  // それでも見つからなければwindow._rankingDataを直接参照
+  if(!pd&&window._rankingData&&window._rankingData[pk]){
+    pd=window._rankingData[pk];
+    // localStorageにも書き込んでおく
+    data=Object.assign({},window._rankingData,data);
+    localStorage.setItem(SK,JSON.stringify(data));
+  }
   if(!pd){showToast(`前週（${formatDate(pk)}）のデータがありません`);return;}
   const nd=JSON.parse(JSON.stringify(pd));nd.date=wk;data[wk]=nd;
   saveToStorage(data);renderInputFormContent();showToast(`📋 ${formatDate(pk)} のデータをコピーしました`);
