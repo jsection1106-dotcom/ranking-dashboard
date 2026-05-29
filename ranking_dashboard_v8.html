@@ -1106,12 +1106,83 @@ function renderTrend(){
     :'<div style="font-size:10px;color:#888;margin-bottom:8px;">競合店データ不足（データが蓄積されると自動抽出されます）</div>';
 
   const titleLabel=mode==='monthly'?'月次平均順位推移':'週次順位推移';
+  // Google検索順位の推移
+  const googlePeriods = mode==='monthly' ? (() => {
+    const monthMap={};
+    allWeeks.forEach(wk=>{
+      const ym=wk.slice(0,7);
+      const gd=data[wk]?.google?.[area]||[];
+      if(!monthMap[ym])monthMap[ym]={label:ym,sites:[]};
+      monthMap[ym].sites.push(gd);
+    });
+    return Object.values(monthMap).map(({label,sites})=>({label,gd:sites[Math.floor(sites.length/2)]||[]}));
+  })() : allWeeks.map(wk=>({label:wk.slice(5),gd:data[wk]?.google?.[area]||[]}));
+
+  // Google検索SVGグラフ
+  const gSites=[...new Set(googlePeriods.flatMap(p=>p.gd).filter(s=>s))].slice(0,5);
+  const gColors=['#1a6ed8','#e3a517','#d93025','#1e8a3a','#7c3aed'];
+  let gSvg=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${svgW}px;background:#fff;border-radius:8px;border:1px solid #d0d0d0;">`;
+  for(let r=1;r<=5;r++){
+    const y=yPos(r);
+    gSvg+=`<line x1="${padL}" y1="${y}" x2="${svgW-padR}" y2="${y}" stroke="#e0e0e0" stroke-width="0.5"/>`;
+    gSvg+=`<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#888">${r}位</text>`;
+  }
+  googlePeriods.forEach(({label},i)=>{
+    gSvg+=`<text x="${xPos(i)}" y="${svgH-padB+16}" text-anchor="middle" font-size="9" fill="#555">${label}</text>`;
+  });
+  gSites.forEach((site,si)=>{
+    const color=gColors[si%gColors.length];
+    let d='';
+    googlePeriods.forEach(({gd},i)=>{
+      const rank=gd.findIndex(s=>isSameShop(s,site));
+      if(rank===-1) return;
+      const x=xPos(i),y=yPos(rank+1);
+      d+=d===''?`M${x},${y}`:`L${x},${y}`;
+    });
+    if(d) gSvg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2"/>`;
+    googlePeriods.forEach(({gd},i)=>{
+      const rank=gd.findIndex(s=>isSameShop(s,site));
+      if(rank===-1) return;
+      gSvg+=`<circle cx="${xPos(i)}" cy="${yPos(rank+1)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+  });
+  // Google凡例
+  let gLegendX=padL;
+  gSites.forEach((site,si)=>{
+    const color=gColors[si%gColors.length];
+    gSvg+=`<rect x="${gLegendX}" y="${svgH-padB+32}" width="10" height="10" fill="${color}" rx="2"/>`;
+    gSvg+=`<text x="${gLegendX+13}" y="${svgH-padB+41}" font-size="9" fill="#333">${site}</text>`;
+    gLegendX+=Math.min(site.length*7+20,200);
+  });
+  gSvg+=`</svg>`;
+
+  // Google検索テーブル
+  let gTable=`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;">
+    <thead><tr style="background:#1e5a9e;color:#fff;">
+      <th style="padding:6px 8px;text-align:left;">期間</th>`;
+  for(let i=1;i<=5;i++) gTable+=`<th style="padding:6px 8px;text-align:center;">${i}位</th>`;
+  gTable+=`</tr></thead><tbody>`;
+  googlePeriods.forEach(({label,gd},idx)=>{
+    const bg=idx%2===0?'#f9f9f9':'#fff';
+    gTable+=`<tr style="background:${bg};"><td style="padding:5px 8px;font-weight:600;">${label}</td>`;
+    for(let i=0;i<5;i++) gTable+=`<td style="padding:5px 8px;text-align:center;font-size:11px;">${gd[i]||'−'}</td>`;
+    gTable+=`</tr>`;
+  });
+  gTable+=`</tbody></table>`;
+
+  const kw=GOOGLE_KEYWORDS[area]||'';
+
   document.getElementById('trendContent').innerHTML=`
     <div style="background:#fff;border:1px solid #d0d0d0;border-radius:10px;padding:14px;margin-bottom:14px;">
       <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">📈 ${area} / ${media} ${titleLabel}</div>
       ${rivalDesc}
       ${svg}
       ${table}
+    </div>
+    <div style="background:#fff;border:1px solid #d0d0d0;border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#1e5a9e;margin-bottom:8px;">🔍 ${area} / Googleワード検索順位 ${titleLabel}（${kw}）</div>
+      ${gSites.length?gSvg:'<div style="color:#888;font-size:11px;">Google検索データがありません</div>'}
+      ${gSites.length?gTable:''}
     </div>`;
 }
 
