@@ -183,12 +183,10 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
   <!-- Googleワード検索上位5 -->
   <div id="view-google" class="hidden">
     <div class="week-bar">
-      <label>集計週：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
+      <label>集計週（月曜日）：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
       <button class="btn btn-ghost" onclick="copyGoogleFromPrevWeek()">📋 前週コピー</button>
       <button class="btn btn-ghost" onclick="clearGoogleForm()">🗑️ クリア</button>
       <button class="btn btn-primary" onclick="saveGoogleData()">💾 手入力を保存</button>
-      <label style="margin-left:10px;">表示：</label><select id="googleWeekSelect" onchange="renderGoogleView()"></select>
-      <label style="margin-left:6px;">比較：</label><select id="googleWeekCompare" onchange="renderGoogleView()"><option value="">（比較なし）</option></select>
     </div>
     <div class="google-section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
