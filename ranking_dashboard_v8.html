@@ -520,7 +520,6 @@ function renderGoogleSection(){
     h+=`<div class="google-area-block">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
         <div class="google-area-title">📍 ${area}</div>
-        <button class="btn btn-paste" onclick="pasteGoogleFromClipboard('${area}')">📋 貼り付け</button>
       </div>
       <div class="google-area-kw">${kw}</div>`;
     for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="ginput_${area}_${r}" value="${esc(sg[r-1]||'')}" placeholder="サイト名"></div>`;
