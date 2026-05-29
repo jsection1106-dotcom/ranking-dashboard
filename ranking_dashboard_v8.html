@@ -405,21 +405,22 @@ function saveData(){
 }
 function clearForm(){if(!confirm('現在のエリアの入力をクリアしますか？'))return;document.querySelectorAll('#inputFormContent input[type=text]').forEach(e=>e.value='');}
 function copyFromPrevWeek(){
-  const wk=document.getElementById('inputWeekDate')?.value;if(!wk){showToast('集計週を選択してください');return;}
+  const wk=document.getElementById('inputWeekDate')?.value;
+  if(!wk){showToast('集計週を選択してください');return;}
   const pk=getPrevWeek(wk);
-  // まずlocalStorage、なければwindow._rankingDataから探す
-  let data=loadData();
-  let pd=data[pk];
-  // それでも見つからなければwindow._rankingDataを直接参照
-  if(!pd&&window._rankingData&&window._rankingData[pk]){
-    pd=window._rankingData[pk];
-    // localStorageにも書き込んでおく
-    data=Object.assign({},window._rankingData,data);
-    localStorage.setItem(SK,JSON.stringify(data));
+  // localStorageから直接取得
+  let allData={};
+  try{allData=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
+  // デバッグ：保存されている週キー一覧をトーストで表示
+  const keys=Object.keys(allData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
+  if(!allData[pk]){
+    showToast('前週('+pk+')なし。保存済み週:'+keys.join(','));
+    return;
   }
-  if(!pd){showToast(`前週（${formatDate(pk)}）のデータがありません`);return;}
-  const nd=JSON.parse(JSON.stringify(pd));nd.date=wk;data[wk]=nd;
-  saveToStorage(data);renderInputFormContent();showToast(`📋 ${formatDate(pk)} のデータをコピーしました`);
+  const nd=JSON.parse(JSON.stringify(allData[pk]));nd.date=wk;allData[wk]=nd;
+  localStorage.setItem(SK,JSON.stringify(allData));
+  renderInputFormContent();
+  showToast('📋 '+formatDate(pk)+' のデータをコピーしました');
 }
 
 function renderGoogleSection(){
