@@ -349,7 +349,7 @@ function renderDashboard(){
         let mdf='';if(cd&&cmy[s]){const cur=parseInt(mr),prv=parseInt(cmy[s]);if(!isNaN(cur)&&!isNaN(prv)){if(prv>cur)mdf=`<span class="diff-up">▲${prv-cur}</span>`;else if(prv<cur)mdf=`<span class="diff-down">▼${cur-prv}</span>`;else mdf='<span class="diff-same">－</span>';}}
         const storeIdx=(MY_STORES[area]||[]).indexOf(s);
         const storeColorClass=`my-store-${storeIdx>=0?storeIdx:0}`;
-        h+=`<tr class="my-store-row ${storeColorClass}"><td colspan="2" style="padding:2px 4px;font-size:11px;"><span style="font-size:9px;font-weight:700;">自店</span> ${s}：<span class="my-rank-val">${mr}</span>${mdf}</td></tr>`;
+        h+=`<tr class="my-store-row ${storeColorClass}"><td colspan="2" style="padding:2px 4px;font-size:11px;"><span style="font-size:9px;font-weight:700;color:var(--accent);">${s}</span>：<span class="my-rank-val">${mr}</span>${mdf}</td></tr>`;
       }
       h+=`</table></div>`;
     }
@@ -471,7 +471,7 @@ function renderInputFormContent(){
       </div>`;
     for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名"></div>`;
     const stores=MY_STORES[area]||[];
-    if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label">自店</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位"></div>`;}}
+    if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label" style="width:auto;font-size:9px;color:var(--accent);white-space:nowrap;flex-shrink:0;max-width:80px;overflow:hidden;text-overflow:ellipsis;" title="${s}">${s}</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位"></div>`;}}
     h+=`</div>`;
   }
   h+=`</div></div>`;
