@@ -383,6 +383,8 @@ function renderDashboard(){
     h+=`</div></div>`;
   }
   h+=`</div>`;el.innerHTML=h;
+  // エリア別詳細も自動更新
+  if(currentDashView==='area') renderDashboardArea();
 }
 
 // ===== コピペ機能 =====
