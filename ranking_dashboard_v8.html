@@ -193,7 +193,11 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
       <label style="margin-left:6px;">比較：</label><select id="googleWeekCompare" onchange="renderGoogleView()"><option value="">（比較なし）</option></select>
     </div>
     <div class="google-section">
-      <div class="section-title" style="margin-bottom:10px;">✏️ 入力フォーム　<span style="font-size:10px;color:var(--text2);font-weight:400;">各エリアの検索ワードで調べた上位5サイトを入力してください</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div class="section-title">✏️ 入力フォーム　<span style="font-size:10px;color:var(--text2);font-weight:400;">各エリアの検索ワードで調べた上位5サイトを入力してください</span></div>
+        <button class="btn btn-purple" onclick="pasteGoogleBulk()">📋 全エリアまとめて貼り付け</button>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">💡 Excelで該当週の1位〜5位を全エリア分（8列×5行）選択してCtrl+C → 「📋 全エリアまとめて貼り付け」</div>
       <div class="google-area-grid" id="googleInputGrid"></div>
     </div>
     <div class="section-title" style="margin-bottom:10px;">📋 保存済みデータ</div>
@@ -550,6 +554,34 @@ function pasteGoogleFromClipboard(area){
   });
 }
 
+
+
+function pasteGoogleBulk(){
+  navigator.clipboard.readText().then(text=>{
+    applyGoogleBulkPaste(text);
+  }).catch(()=>{
+    const text=prompt('Excelから1位〜5位の全エリア分をコピーして貼り付けてください（5行×8列）');
+    if(text) applyGoogleBulkPaste(text);
+  });
+}
+
+function applyGoogleBulkPaste(text){
+  if(!text){showToast('クリップボードにデータがありません');return;}
+  // タブ区切り・改行区切りで2次元配列に変換
+  const rows=text.split(/\r?\n/).map(r=>r.split('\t').map(s=>s.trim())).filter(r=>r.some(v=>v));
+  if(!rows.length){showToast('データが空です');return;}
+
+  let filled=0;
+  // 行=1位〜5位、列=エリア順
+  rows.forEach((row,ri)=>{
+    if(ri>=5) return; // 5行まで
+    AREAS.forEach((area,ci)=>{
+      const el=document.getElementById(`ginput_${area}_${ri+1}`);
+      if(el&&ci<row.length){el.value=row[ci]||'';filled++;}
+    });
+  });
+  showToast(`✅ Google検索：${Math.min(rows.length,5)}行×${AREAS.length}エリア分を貼り付けました`);
+}
 
 function copyGoogleFromPrevWeek(){
   const wk=document.getElementById('googleInputWeekDate')?.value;
