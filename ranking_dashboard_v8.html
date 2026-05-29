@@ -129,7 +129,6 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 .hidden{display:none!important;}
 @media print{header,.tabs,.week-bar,.guide-box,.paste-guide,.btn,select,input,textarea,.open-all-panel,#view-input,#view-urls,#view-history{display:none!important;}body{background:#fff;color:#000;}.area-card{border:1px solid #ccc;break-inside:avoid;margin-bottom:8px;}.area-card-header{background:#f5f5f5;}.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.rank-table td,.area-name,.shop-name,.my-rank-val,.rank-num{color:#000!important;}.my-store-row{background:#e8f4ff;}.status-bar{display:none!important;}.google-view-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.google-card-kw{color:#555!important;}}
 </style>
-<script src="xlsx.full.min.js"></script>
 </head>
 <body>
 <header>
@@ -1324,5 +1323,6 @@ function isSameShop(a,b){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
 </script>
+<script src="xlsx.full.min.js"></script>
 </body>
 </html>
