@@ -356,6 +356,64 @@ function renderDashboard(){
 
 // ===== コピペ機能 =====
 // Excelからコピーしたテキスト（改行区切りまたはタブ区切り）を解析して1〜5位に入力
+
+// ===== 一括貼り付け（エリア全媒体） =====
+// Excelのコピー形式：
+// 行: 1位, 2位, 3位, 4位, 5位, 自店A, 自店B
+// 列: シティヘブン, デリヘルタウン, ...(媒体順)
+function pasteBulk(area){
+  navigator.clipboard.readText().then(text=>{
+    applyBulkPaste(area, text);
+  }).catch(()=>{
+    const text=prompt('Excelからコピーしたデータを貼り付けてください\n（1位〜自店順位まで全媒体分）');
+    if(text) applyBulkPaste(area, text);
+  });
+}
+
+function applyBulkPaste(area, text){
+  if(!text){showToast('クリップボードにデータがありません');return;}
+  
+  // タブ区切り・改行区切りで2次元配列に変換
+  const rows = text.split(/\r?\n/).map(r=>r.split('\t').map(s=>s.trim()));
+  
+  const mediaList = Object.keys(URLS[area]||{});
+  const myStores = MY_STORES[area]||[];
+  
+  // 行数確認：1〜5位 + 自店分
+  const expectedRows = 5 + myStores.length;
+  // 空行を除去
+  const dataRows = rows.filter(r=>r.some(v=>v));
+  
+  if(!dataRows.length){showToast('データが空です');return;}
+  
+  let rankCount=0, myCount=0;
+  
+  // 1〜5位を入力（最初の5行）
+  for(let ri=0;ri<5&&ri<dataRows.length;ri++){
+    const row = dataRows[ri];
+    mediaList.forEach((media,ci){
+      const el=document.getElementById(`rank_${area}_${media}_${ri+1}`);
+      if(el && ci<row.length) el.value=row[ci]||'';
+    });
+    rankCount++;
+  }
+  
+  // 自店順位を入力（5行目以降）
+  myStores.forEach((store,si)=>{
+    const rowIdx = 5 + si;
+    if(rowIdx >= dataRows.length) return;
+    const row = dataRows[rowIdx];
+    const key = store.replace(/\s/g,'_');
+    mediaList.forEach((media,ci)=>{
+      const el=document.getElementById(`myrank_${area}_${media}_${key}`);
+      if(el && ci<row.length) el.value=row[ci]||'';
+    });
+    myCount++;
+  });
+  
+  showToast(`✅ ${area}：${rankCount}行分のランキングと自店順位${myCount}店分を貼り付けました`);
+}
+
 function pasteFromClipboard(area, media){
   navigator.clipboard.readText().then(text=>{
     // タブ・改行・全角スペースを正規化
@@ -391,14 +449,21 @@ function renderInputFormContent(){
   const area=currentInputArea;const ml=Object.keys(URLS[area]);
   const wk=document.getElementById('inputWeekDate')?.value||'';const wd=wk?loadData()[wk]:null;
   // ★タイトルを「各媒体店舗ランキング」に変更（全店）
-  let h=`<div class="input-section"><div class="section-title" style="margin-bottom:8px;">📺 ${area}：各媒体店舗ランキング</div><div class="input-media-grid">`;
+  let h=`<div class="input-section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+    <div class="section-title">📺 ${area}：各媒体店舗ランキング</div>
+    <button class="btn btn-purple" onclick="pasteBulk('${area}')">📋 全媒体まとめて貼り付け</button>
+  </div>
+  <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
+    💡 Excelでこのエリアの日付行の次（1位〜自店順位まで）を全列選択してCtrl+C → 「📋 全媒体まとめて貼り付け」
+  </div>
+  <div class="input-media-grid">`;
   for(const media of ml){
     const url=URLS[area]?.[media]||'';const sr=wd?.rankings?.[area]?.[media]?.ranks||[];const sm=wd?.rankings?.[area]?.[media]?.myRanks||{};
     // メディアブロックのタイトル行に📋貼り付けボタン追加
     h+=`<div class="input-media-block">
       <div class="input-media-title">
         <span>${media}${url?` <a href="${url}" target="_blank" class="media-url-btn">🔗</a>`:''}</span>
-        <button class="btn btn-paste" onclick="pasteFromClipboard('${area}','${media}')">📋 貼り付け</button>
       </div>`;
     for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名"></div>`;
     const stores=MY_STORES[area]||[];
