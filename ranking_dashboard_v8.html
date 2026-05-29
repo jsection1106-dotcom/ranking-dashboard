@@ -248,8 +248,8 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 const AREAS=['西船橋','錦糸町','沼津','千葉','木更津','成田','神栖','水戸'];
 
 const MY_STORES={
-  '西船橋':['西船人妻花壇','丸妻西船橋'],
-  '錦糸町':['錦糸町人妻花壇','丸妻錦糸町'],
+  '西船橋':['西船人妻花壇','丸妻西船橋店'],
+  '錦糸町':['錦糸町人妻花壇','丸妻錦糸町店'],
   '沼津':['沼津人妻花壇'],
   '千葉':['千葉人妻花壇'],
   '木更津':['木更津人妻花壇'],
@@ -471,7 +471,7 @@ function renderInputFormContent(){
       </div>`;
     for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名"></div>`;
     const stores=MY_STORES[area]||[];
-    if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label" style="width:auto;font-size:9px;color:var(--accent);white-space:nowrap;flex-shrink:0;max-width:80px;overflow:hidden;text-overflow:ellipsis;" title="${s}">${s}</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位"></div>`;}}
+    if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label" style="width:90px;min-width:90px;font-size:9px;color:var(--accent);white-space:nowrap;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;" title="${s}">${s}</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位"></div>`;}}
     h+=`</div>`;
   }
   h+=`</div></div>`;
