@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap');
+:root{--bg:#ffffff;--surface:#f5f5f5;--surface2:#ebebeb;--border:#d0d0d0;--accent:#1a6ed8;--accent2:#d93025;--accent3:#1e8a3a;--accent4:#7c3aed;--text:#1a1a1a;--text2:#555555;--rank1:#b8860b;--rank2:#888888;--rank3:#a0522d;--up:#1e8a3a;--down:#d93025;--new:#7c3aed;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap;}
+.header-left h1{font-family:'Space Mono',monospace;font-size:13px;color:var(--accent);letter-spacing:.05em;}
+.header-left p{color:var(--text2);font-size:10px;margin-top:2px;}
+.header-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.date-display{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent3);background:rgba(63,185,80,.1);padding:3px 8px;border-radius:4px;border:1px solid rgba(63,185,80,.3);}
+.btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#ffffff;border-color:var(--accent);}
+.btn-primary:hover{background:#79c0ff;}
+.btn-success{background:var(--accent3);color:#ffffff;border-color:var(--accent3);}
+.btn-success:hover{background:#56d364;}
+.btn-orange{background:#e3a517;color:#ffffff;border-color:#e3a517;}
+.btn-orange:hover{background:#f0b429;}
+.btn-purple{background:var(--accent4);color:#ffffff;border-color:var(--accent4);}
+.btn-purple:hover{background:#e2c4ff;}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border);}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.btn-danger{background:transparent;color:var(--accent2);border-color:var(--accent2);}
+.btn-danger:hover{background:rgba(247,129,102,.1);}
+.btn-paste{background:rgba(210,168,255,.15);color:var(--accent4);border-color:rgba(210,168,255,.4);font-size:10px;padding:3px 8px;}
+.btn-paste:hover{background:rgba(210,168,255,.3);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.main{padding:12px 16px;}
+.tabs{display:flex;gap:2px;margin-bottom:14px;background:var(--surface);padding:3px;border-radius:8px;border:1px solid var(--border);flex-wrap:wrap;}
+.tab{padding:5px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap;}
+.tab.active{background:var(--accent);color:#ffffff;}
+.tab:hover:not(.active){color:var(--text);background:var(--surface2);}
+.week-bar{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.week-bar label{font-size:11px;color:var(--text2);}
+.week-bar select,.week-bar input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;}
+.guide-box{background:rgba(210,168,255,.08);border:1px solid rgba(210,168,255,.2);border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--text2);}
+.guide-box strong{color:var(--accent4);}
+/* コピペ説明 */
+.paste-guide{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:9px 14px;margin-bottom:12px;font-size:11px;line-height:1.9;color:var(--text2);}
+.paste-guide strong{color:var(--accent);}
+.paste-guide code{font-family:'Space Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:10px;color:var(--accent3);}
+.status-bar{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);border-radius:6px;padding:6px 10px;margin-bottom:12px;font-size:11px;color:var(--accent3);display:flex;align-items:center;gap:6px;}
+.status-dot{width:7px;height:7px;background:var(--accent3);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.section-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.badge{font-size:9px;padding:2px 6px;border-radius:20px;font-family:'Space Mono',monospace;}
+.badge-orange{background:rgba(227,165,23,.15);color:#e3a517;border:1px solid rgba(227,165,23,.3);}
+.area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;margin-bottom:16px;}
+.area-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.area-card-header{padding:8px 12px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.area-name{font-weight:700;font-size:12px;}
+.area-card-body{padding:8px 12px;}
+.media-block{margin-bottom:7px;}
+.media-head{font-size:10px;color:var(--text2);padding:2px 0;font-weight:600;display:flex;align-items:center;justify-content:space-between;}
+.media-url-btn{font-size:9px;color:var(--accent);text-decoration:none;background:rgba(88,166,255,.08);padding:1px 5px;border-radius:3px;border:1px solid rgba(88,166,255,.2);}
+table.rank-table{width:100%;border-collapse:collapse;font-size:11px;}
+.rank-table td{padding:2px 4px;border-bottom:1px solid rgba(48,54,61,.4);vertical-align:middle;}
+.rank-table tr:last-child td{border-bottom:none;}
+.rank-num{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;width:20px;text-align:center;}
+.r1{color:var(--rank1);}.r2{color:var(--rank2);}.r3{color:var(--rank3);}.r4,.r5{color:var(--text2);}
+.shop-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+.diff-up{color:var(--up);font-size:9px;font-weight:700;margin-left:3px;}
+.diff-down{color:var(--down);font-size:9px;font-weight:700;margin-left:3px;}
+.diff-new{color:var(--new);font-size:9px;font-weight:700;margin-left:3px;}
+.diff-same{color:var(--text2);font-size:9px;margin-left:3px;}
+.my-store-row{background:rgba(88,166,255,.07);border-left:2px solid var(--accent);}
+.my-rank-val{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);}
+.input-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
+.input-area-tabs{display:flex;gap:3px;margin-bottom:10px;flex-wrap:wrap;}
+.input-area-tab{padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);transition:all .15s;}
+.input-area-tab.active{background:var(--accent);color:#0d1117;border-color:var(--accent);}
+.input-area-tab:hover:not(.active){color:var(--text);}
+.input-media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;}
+.input-media-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px;}
+.input-media-title{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;}
+.input-row{display:flex;align-items:center;gap:4px;margin-bottom:3px;}
+.rank-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);width:22px;text-align:right;flex-shrink:0;}
+input[type=text]{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:3px 7px;color:var(--text);font-size:11px;font-family:'Noto Sans JP',sans-serif;width:100%;transition:border-color .15s;}
+input[type=text]:focus{outline:none;border-color:var(--accent);}
+.my-store-input{background:rgba(88,166,255,.05);border-color:rgba(88,166,255,.3)!important;}
+.my-store-label{font-size:9px;color:var(--accent);width:22px;text-align:right;flex-shrink:0;}
+.divider{border-top:1px solid var(--border);margin:5px 0;}
+/* コピペ入力欄 */
+.paste-area{width:100%;background:var(--bg);border:1px dashed rgba(210,168,255,.4);border-radius:4px;padding:4px 7px;color:var(--text);font-size:10px;font-family:'Noto Sans JP',sans-serif;resize:vertical;min-height:36px;line-height:1.6;margin-bottom:4px;}
+.paste-area:focus{outline:none;border-color:var(--accent4);}
+.paste-area::placeholder{color:var(--text2);font-size:10px;}
+/* Google */
+.google-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;}
+.google-area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.google-area-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.google-area-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.google-area-kw{font-size:10px;color:var(--accent3);font-family:'Space Mono',monospace;margin-bottom:7px;background:rgba(63,185,80,.08);padding:2px 6px;border-radius:3px;display:inline-block;}
+.google-view-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:16px;}
+.google-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.google-card-header{padding:7px 11px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.google-card-kw{font-size:9px;color:var(--accent3);font-family:'Space Mono',monospace;margin-top:2px;}
+.google-card-body{padding:7px 11px;}
+.google-row{display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid rgba(48,54,61,.4);}
+.google-row:last-child{border-bottom:none;}
+/* URL */
+.url-table{width:100%;border-collapse:collapse;font-size:11px;}
+.url-table th{background:var(--surface2);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;color:var(--text2);font-weight:600;}
+.url-table td{padding:6px 10px;border-bottom:1px solid rgba(48,54,61,.4);vertical-align:middle;}
+.url-link{color:var(--accent);text-decoration:none;font-size:10px;background:rgba(88,166,255,.08);padding:2px 6px;border-radius:3px;border:1px solid rgba(88,166,255,.2);display:inline-block;margin:1px;}
+.url-link:hover{background:rgba(88,166,255,.2);}
+.open-all-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
+.open-all-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:8px;}
+.open-area-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;cursor:pointer;font-size:11px;color:var(--text);transition:all .15s;text-align:left;display:flex;align-items:center;justify-content:space-between;width:100%;}
+.open-area-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cnt{font-size:9px;color:var(--text2);}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.history-date{font-family:'Space Mono',monospace;font-size:12px;color:var(--accent);}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--accent3);color:#0d1117;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:700;opacity:0;transform:translateY(6px);transition:all .3s;z-index:999;max-width:320px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.no-data{color:var(--text2);font-size:11px;padding:20px;text-align:center;font-style:italic;}
+/* 自店ハイライト色（店舗ごとに異なる色） */
+.my-store-0{background:rgba(88,166,255,.18)!important;border-left:3px solid #58a6ff!important;}
+.my-store-1{background:rgba(63,185,80,.18)!important;border-left:3px solid #3fb950!important;}
+.my-store-2{background:rgba(210,168,255,.18)!important;border-left:3px solid #d2a8ff!important;}
+.my-store-3{background:rgba(247,129,102,.18)!important;border-left:3px solid #f78166!important;}
+.my-store-4{background:rgba(255,215,0,.15)!important;border-left:3px solid #ffd700!important;}
+.my-store-5{background:rgba(45,212,191,.15)!important;border-left:3px solid #2dd4bf!important;}
+/* 順位変動ハイライト（自店以外） */
+.rank-changed{background:rgba(227,165,23,.13)!important;}
+.rank-changed td{color:var(--text)!important;}
+.hidden{display:none!important;}
+@media print{header,.tabs,.week-bar,.guide-box,.paste-guide,.btn,select,input,textarea,.open-all-panel,#view-input,#view-urls,#view-history{display:none!important;}body{background:#fff;color:#000;}.area-card{border:1px solid #ccc;break-inside:avoid;margin-bottom:8px;}.area-card-header{background:#f5f5f5;}.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.rank-table td,.area-name,.shop-name,.my-rank-val,.rank-num{color:#000!important;}.my-store-row{background:#e8f4ff;}.status-bar{display:none!important;}.google-view-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.google-card-kw{color:#555!important;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <h1>📊 各媒体、検索ランキング（週次）</h1>
+    <p>媒体ランキング＆Google検索 週次集計システム　<span id="ghStatus" style="color:var(--accent3);font-size:9px;"></span></p>
+  </div>
+  <div class="header-right">
+    <div class="date-display" id="currentDate"></div>
+    
+    
+    
+    
+  </div>
+</header>
+<div class="main">
+  <div class="tabs">
+    <div class="tab active" id="tab-dashboard" onclick="showTab('dashboard')">📊 ダッシュボード</div>
+    <div class="tab" id="tab-input" onclick="showTab('input')">📺 媒体別店舗ランキング上位5</div>
+    <div class="tab" id="tab-google" onclick="showTab('google')">🔍 Googleワード検索上位5（CP求人サイトのみ）</div>
+    <div class="tab" id="tab-urls" onclick="showTab('urls')">🔗 URL一覧</div>
+    <div class="tab" id="tab-history" onclick="showTab('history')">📅 履歴</div>
+    <div class="tab" id="tab-trend" onclick="showTab('trend')">📈 推移分析</div>
+  </div>
+
+  <!-- ダッシュボード -->
+  <div id="view-dashboard">
+    <div class="week-bar">
+      <label>表示週：</label><select id="dashWeekSelect" onchange="renderDashboard()"></select>
+      <label style="margin-left:6px;">比較週：</label><select id="dashWeekCompare" onchange="renderDashboard()"><option value="">（比較なし）</option></select>
+      <span id="diffLegend" class="hidden" style="font-size:10px;color:var(--text2);margin-left:6px;"><span class="diff-up">▲上昇</span>&nbsp;<span class="diff-down">▼下降</span>&nbsp;<span class="diff-new">★新</span></span>
+    </div>
+    <!-- ダッシュボード内タブ -->
+    <div style="display:flex;gap:2px;margin-bottom:14px;">
+      <div id="dash-tab-all" onclick="switchDashView('all')" style="padding:5px 16px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;background:var(--accent);color:#fff;transition:all .15s;">📊 全体</div>
+      <div id="dash-tab-area" onclick="switchDashView('area')" style="padding:5px 16px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;background:var(--surface2);color:var(--text2);border:1px solid var(--border);transition:all .15s;">📍 エリア別詳細</div>
+    </div>
+    <!-- 全体表示 -->
+    <div id="dash-view-all">
+      <div id="dashboardContent"><div class="no-data">データがありません。「媒体別店舗ランキング上位5」タブから入力してください。</div></div>
+    </div>
+    <!-- エリア別詳細 -->
+    <div id="dash-view-area" style="display:none;">
+      <div class="week-bar" style="margin-bottom:12px;">
+        <label>エリア：</label>
+        <select id="dashAreaSelect" onchange="renderDashboardArea()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;"></select>
+      </div>
+      <div id="dashboardAreaContent"><div class="no-data">エリアを選択してください。</div></div>
+    </div>
+  </div>
+
+  <!-- 媒体別店舗ランキング上位5 -->
+  <div id="view-input" class="hidden">
+    
+    <div class="week-bar">
+      <label>集計週（月曜日）：</label><input type="date" id="inputWeekDate" onchange="renderInputFormContent()">
+      
+      
+      
+    </div>
+    <div class="input-area-tabs" id="inputAreaTabs"></div>
+    <div id="inputFormContent"></div>
+  </div>
+
+  <!-- Googleワード検索上位5 -->
+  <div id="view-google" class="hidden">
+    <div class="week-bar">
+      <label>集計週（月曜日）：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
+      
+      
+      
+    </div>
+    <div class="google-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div class="section-title">✏️ 入力フォーム　<span style="font-size:10px;color:var(--text2);font-weight:400;">各エリアの検索ワードで調べた上位5サイトを入力してください</span></div>
+        
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">💡 Excelで該当週の1位〜5位を全エリア分（8列×5行）選択してCtrl+C → 「📋 全エリアまとめて貼り付け」</div>
+      <div class="google-area-grid" id="googleInputGrid"></div>
+    </div>
+    <div class="section-title" style="margin-bottom:10px;">📋 保存済みデータ</div>
+    <div id="googleViewContent"><div class="no-data">データがありません。上のフォームから入力して保存してください。</div></div>
+  </div>
+
+  <!-- URL一覧 -->
+  <div id="view-urls" class="hidden">
+    <div class="open-all-panel">
+      <div class="section-title">🔗 エリア別一括オープン <span class="badge badge-orange">クリックで全媒体を一度に開く</span></div>
+      <div class="open-all-grid" id="openAllGrid"></div>
+    </div>
+    <div class="input-section">
+      <div class="section-title" style="margin-bottom:10px;">全URL一覧</div>
+      <div style="overflow-x:auto;"><table class="url-table" id="urlTable"></table></div>
+    </div>
+  </div>
+
+
+  <!-- 推移分析 -->
+  <div id="view-trend" class="hidden">
+    <div class="week-bar" style="flex-wrap:wrap;gap:8px;">
+      <label>エリア：</label>
+      <select id="trendAreaSelect" onchange="renderTrend()"></select>
+      <label style="margin-left:6px;">媒体：</label>
+      <select id="trendMediaSelect" onchange="renderTrend()"></select>
+      <label style="margin-left:6px;">集計：</label>
+      <select id="trendModeSelect" onchange="renderTrend()">
+        <option value="weekly">週次</option>
+        <option value="monthly">月次</option>
+      </select>
+      <span style="font-size:10px;color:var(--text2);margin-left:10px;">※ エリアを選ぶと下部にCP求人・Google検索上位5サイトが表示されます</span>
+    </div>
+    <div id="trendContent"></div>
+  </div>
+  <!-- 履歴 -->
+  <div id="view-history" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="section-title">保存データ一覧</div>
+      <button class="btn btn-danger" onclick="if(confirm('全データを削除しますか？')){localStorage.removeItem('rankingDataV8');location.reload();}">🗑️ 全削除</button>
+    </div>
+    <div id="historyContent"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ★エリア順：千葉・木更津・成田の順に変更
+const AREAS=['西船橋','錦糸町','沼津','千葉','木更津','成田','神栖','水戸'];
+
+const MY_STORES={
+  '西船橋':['西船人妻花壇','丸妻西船橋店'],
+  '錦糸町':['錦糸町人妻花壇','丸妻錦糸町店'],
+  '沼津':['沼津人妻花壇'],
+  '千葉':['千葉人妻花壇'],
+  '木更津':['木更津人妻花壇'],
+  '成田':['成田人妻花壇'],
+  '神栖':['神栖人妻花壇'],
+  '水戸':['水戸人妻花壇']
+};
+
+const GOOGLE_KEYWORDS={
+  '西船橋':'西船橋　デリヘル　求人',
+  '錦糸町':'錦糸町　デリヘル　求人',
+  '沼津':'沼津　デリヘル　求人',
+  '千葉':'栄町　デリヘル　求人',
+  '木更津':'木更津　デリヘル　求人',
+  '成田':'成田　デリヘル　求人',
+  '神栖':'神栖　デリヘル　求人',
+  '水戸':'水戸　デリヘル　求人'
+};
+
+const URLS={
+  '西船橋':{'シティヘブン':'https://www.cityheaven.net/chiba/shop-ranking-205418/','デリヘルタウン':'https://www.dto.jp/funabashi/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/chiba/a_2084/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/chiba/nishifunabashi_area/ranking/','駅ちか人気！':'https://ranking-deli.jp/11/area63/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=181&k=16','ぴゅあらば':'https://purelovers.com/b1/p11/a81/ranking/shop/'},
+  '錦糸町':{'シティヘブン':'https://www.cityheaven.net/tokyo/shop-ranking-203291/','デリヘルタウン':'https://www.dto.jp/kinshicho/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/tokyo/kinshicho_area/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/tokyo/kinshicho_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/8/area36/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=75&k=16','ぴゅあらば':'https://purelovers.com/b1/p8/a56/ranking/shop/'},
+  '沼津':{'シティヘブン':'https://www.cityheaven.net/shizuoka/shop-ranking-205316/','デリヘルタウン':'https://www.dto.jp/numadu/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/shizuoka/a_3052/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/shizuoka/numazu_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/17/area97/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=989&k=16','ぴゅあらば':'https://purelovers.com/b1/p23/a138/ranking/shop/','バナナビ':'https://bananavi.jp/shizuoka/pc/ranking/shop.php?mode=search'},
+  '千葉':{'シティヘブン':'https://www.cityheaven.net/chiba/shop-ranking-205415/','デリヘルタウン':'https://www.dto.jp/chibashi/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/chiba/a_2089/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/chiba/sakaemachi_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/11/area62/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=138&k=16','ぴゅあらば':'https://purelovers.com/b1/p11/a80/ranking/shop/'},
+  '木更津':{'シティヘブン':'https://www.cityheaven.net/chiba/shop-ranking-200604/','デリヘルタウン':'https://www.dto.jp/kisaradu/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/chiba/a_2133/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/chiba/kisarazu_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/11/area70/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=630&k=16'},
+  '成田':{'シティヘブン':'https://www.cityheaven.net/chiba/shop-ranking-200602/','デリヘルタウン':'https://www.dto.jp/narita/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/chiba/narita_area/biz_4/ge_1/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/chiba/narita_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/11/area67/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=342&k=16'},
+  '神栖':{'シティヘブン':'https://www.cityheaven.net/ibaraki/shop-ranking-201279/','デリヘルタウン':'https://www.dto.jp/kamisu/shop-list/ranking','風俗じゃぱん':'https://fuzoku.jp/ibaraki/a_2119/biz_4/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/ibaraki/kamisu_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/13/area82/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=2685&k=16'},
+  '水戸':{'シティヘブン':'https://www.cityheaven.net/ibaraki/shop-ranking-201277/','デリヘルタウン':'https://www.dto.jp/mito/shop-list/ranking?cat=2','風俗じゃぱん':'https://fuzoku.jp/ibaraki/a_2118/biz_4/shopranking/','デリヘルじゃぱん':'https://deli-fuzoku.jp/ibaraki/mito_area/genre3/ranking/','駅ちか人気！':'https://ranking-deli.jp/13/area79/genre6/','口コミ風俗情報局':'https://fujoho.jp/index.php?p=ranking_shop&s=718&k=16','ぴゅあらば':'https://purelovers.com/b1/p12/a90/ranking/shop/'}
+};
+
+const SK='rankingDataV8';
+function loadData(){var local={};try{local=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){}if(window._rankingData){var merged=Object.assign({},window._rankingData);Object.keys(local).forEach(function(k){if(k!=='__initialVersion')merged[k]=local[k];});return merged;}return local;}
+function saveToStorage(d){window._rankingData=d;localStorage.setItem(SK,JSON.stringify(d));if(window._ghSaveData){window._ghSaveData(d).then(function(){showToast('✅ GitHubに保存しました');}).catch(function(e){showToast('❌ 保存失敗: '+e.message);});}}
+function formatDate(s){if(!s||s==='__initialVersion')return'';const d=new Date(s+'T00:00:00');if(isNaN(d.getTime()))return'';return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+function getNearestMonday(){const n=new Date();const day=n.getDay();const diff=day===0?-6:1-day;const m=new Date(n);m.setDate(n.getDate()+diff);return m.toISOString().split('T')[0];}
+function getPrevWeek(s){const p=s.split('-');const d=new Date(Date.UTC(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])-7));return d.toISOString().split('T')[0];}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function initCurrentDate(){
+  const now=new Date();const days=['日','月','火','水','木','金','土'];
+  document.getElementById('currentDate').textContent=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} (${days[now.getDay()]})`;
+  const di=document.getElementById('inputWeekDate');if(di)di.value=getNearestMonday();
+  const gi=document.getElementById('googleInputWeekDate');if(gi)gi.value=getNearestMonday();
+}
+
+function showTab(name){
+  ['dashboard','input','google','urls','history','trend'].forEach(t=>{
+    document.getElementById('view-'+t).classList.toggle('hidden',t!==name);
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='urls')renderUrls();
+  if(name==='input'){renderInputAreaTabs();renderInputFormContent();}
+  if(name==='dashboard'){renderDashboard();const sel=document.getElementById('dashAreaSelect');if(sel)sel.innerHTML=AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');}
+  if(name==='google'){renderGoogleSection();renderGoogleView();}
+  if(name==='history')renderHistory();
+  if(name==='trend')renderTrend();
+}
+
+function updateWeekSelects(){
+  const data=loadData();const weeks=Object.keys(data).sort().reverse();
+  const opts=weeks.length?weeks.map(w=>`<option value="${w}">${formatDate(w)}</option>`).join(''):'<option value="">データなし</option>';
+  const cmpOpts='<option value="">（比較なし）</option>'+opts;
+  ['dashWeekSelect','googleWeekSelect'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  ['dashWeekCompare','googleWeekCompare'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=cmpOpts;});
+}
+
+function renderDashboard(){
+  const wk=document.getElementById('dashWeekSelect')?.value;
+  const ck=document.getElementById('dashWeekCompare')?.value;
+  const data=loadData();const wd=wk?data[wk]:null;const cd=ck?data[ck]:null;
+  document.getElementById('diffLegend').classList.toggle('hidden',!cd);
+  const el=document.getElementById('dashboardContent');
+  if(!wd){el.innerHTML='<div class="no-data">データがありません。「媒体別店舗ランキング上位5」タブから入力してください。</div>';return;}
+  let h=`<div class="status-bar"><div class="status-dot"></div>集計週：${formatDate(wk)}${cd?`　比較：${formatDate(ck)}`:''}　全${AREAS.length}エリア</div><div class="area-grid">`;
+  for(const area of AREAS){
+    const ad=wd.rankings?.[area];const cad=cd?.rankings?.[area];
+    const ml=ad?Object.keys(ad):Object.keys(URLS[area]);
+    h+=`<div class="area-card"><div class="area-card-header"><span class="area-name">📍 ${area}</span></div><div class="area-card-body">`;
+    for(const media of ml){
+      const url=URLS[area]?.[media]||'';const md=ad?.[media];const cmd=cad?.[media];
+      const ranks=md?.ranks||[];const cr=cmd?.ranks||[];const my=md?.myRanks||{};const cmy=cmd?.myRanks||{};
+      h+=`<div class="media-block"><div class="media-head">${media}${url?` <a href="${url}" target="_blank" class="media-url-btn">🔗</a>`:''}</div><table class="rank-table">`;
+      for(let i=0;i<5;i++){
+        const shop=ranks[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+        let df='';if(cd&&shop){const pi=cr.indexOf(shop);if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        // 自店以外で順位変動がある場合に背景色
+        let rowChanged=false;
+        if(cd&&shop){
+          const pi=cr.indexOf(shop);
+          if(pi!==-1&&pi!==i) rowChanged=true; // 順位が変わっている
+        }
+        const trClass=rowChanged?'rank-changed':'';
+        h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shop||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+      }
+      for(const s of MY_STORES[area]||[]){
+        const mr=my[s]||'';if(!mr)continue;
+        let mdf='';if(cd&&cmy[s]){const cur=parseInt(mr),prv=parseInt(cmy[s]);if(!isNaN(cur)&&!isNaN(prv)){if(prv>cur)mdf=`<span class="diff-up">▲${prv-cur}</span>`;else if(prv<cur)mdf=`<span class="diff-down">▼${cur-prv}</span>`;else mdf='<span class="diff-same">－</span>';}}
+        const storeIdx=(MY_STORES[area]||[]).indexOf(s);
+        const storeColorClass=`my-store-${storeIdx>=0?storeIdx:0}`;
+        h+=`<tr class="my-store-row ${storeColorClass}"><td colspan="2" style="padding:2px 4px;font-size:11px;"><span style="font-size:9px;font-weight:700;color:var(--accent);">${s}</span>：<span class="my-rank-val">${mr}</span>${mdf}</td></tr>`;
+      }
+      h+=`</table></div>`;
+    }
+    // Google検索順位を追加
+    const dashGd=wd.google?.[area]||[];
+    const dashCgd=cd?.google?.[area]||[];
+    const dashKw=GOOGLE_KEYWORDS[area];
+    if(dashGd.some(v=>v)){
+      h+=`<div class="media-block" style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">
+        <div class="media-head" style="color:var(--accent3);">🔍 Google検索（${dashKw}）</div>
+        <table class="rank-table">`;
+      for(let i=0;i<5;i++){
+        const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+        let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        h+=`<tr><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+      }
+      h+=`</table></div>`;
+    }
+    h+=`</div></div>`;
+  }
+  h+=`</div>`;el.innerHTML=h;
+  // エリア別詳細も自動更新
+  if(currentDashView==='area') renderDashboardArea();
+}
+
+// ===== コピペ機能 =====
+// Excelからコピーしたテキスト（改行区切りまたはタブ区切り）を解析して1〜5位に入力
+
+// ===== 一括貼り付け（エリア全媒体） =====
+// Excelのコピー形式：
+// 行: 1位, 2位, 3位, 4位, 5位, 自店A, 自店B
+// 列: シティヘブン, デリヘルタウン, ...(媒体順)
+function pasteBulk(area){
+  navigator.clipboard.readText().then(text=>{
+    applyBulkPaste(area, text);
+  }).catch(()=>{
+    const text=prompt('Excelからコピーしたデータを貼り付けてください\n（1位〜自店順位まで全媒体分）');
+    if(text) applyBulkPaste(area, text);
+  });
+}
+
+function applyBulkPaste(area, text){
+  if(!text){showToast('クリップボードにデータがありません');return;}
+  
+  // タブ区切り・改行区切りで2次元配列に変換
+  const rows = text.split(/\r?\n/).map(r=>r.split('\t').map(s=>s.trim()));
+  
+  const mediaList = Object.keys(URLS[area]||{});
+  const myStores = MY_STORES[area]||[];
+  
+  // 行数確認：1〜5位 + 自店分
+  const expectedRows = 5 + myStores.length;
+  // 空行を除去
+  const dataRows = rows.filter(r=>r.some(v=>v));
+  
+  if(!dataRows.length){showToast('データが空です');return;}
+  
+  let rankCount=0, myCount=0;
+  
+  // 1〜5位を入力（最初の5行）
+  for(let ri=0;ri<5&&ri<dataRows.length;ri++){
+    const row = dataRows[ri];
+    mediaList.forEach((media,ci)=>{
+      const el=document.getElementById(`rank_${area}_${media}_${ri+1}`);
+      if(el && ci<row.length) el.value=row[ci]||'';
+    });
+    rankCount++;
+  }
+  
+  // 自店順位を入力（5行目以降）
+  myStores.forEach((store,si)=>{
+    const rowIdx = 5 + si;
+    if(rowIdx >= dataRows.length) return;
+    const row = dataRows[rowIdx];
+    const key = store.replace(/\s/g,'_');
+    mediaList.forEach((media,ci)=>{
+      const el=document.getElementById(`myrank_${area}_${media}_${key}`);
+      if(el && ci<row.length) el.value=row[ci]||'';
+    });
+    myCount++;
+  });
+  
+  // 貼り付けと同時に自動保存
+  const wk=document.getElementById('inputWeekDate')?.value;
+  if(wk){
+    const data=loadData();
+    if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};
+    const wd=data[wk];
+    if(!wd.rankings[area])wd.rankings[area]={};
+    for(const media of Object.keys(URLS[area])){
+      const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`rank_${area}_${media}_${r}`);ranks.push(el?el.value.trim():'');}
+      const myRanks={};for(const s of MY_STORES[area]||[]){const k=s.replace(/\s/g,'_');const el=document.getElementById(`myrank_${area}_${media}_${k}`);if(el)myRanks[s]=el.value.trim();}
+      wd.rankings[area][media]={ranks,myRanks};
+    }
+    saveToStorage(data);updateWeekSelects();
+    showToast(`✅ ${area}：貼り付けて保存しました`);
+  } else {
+    showToast(`✅ ${area}：貼り付けました（集計週を選択して保存してください）`);
+  }
+}
+
+function pasteFromClipboard(area, media){
+  navigator.clipboard.readText().then(text=>{
+    // タブ・改行・全角スペースを正規化
+    const lines = text.split(/\r?\n|\t/).map(s=>s.trim()).filter(s=>s.length>0);
+    if(!lines.length){showToast('クリップボードにテキストがありません');return;}
+    let filled=0;
+    for(let i=0;i<5&&i<lines.length;i++){
+      const el=document.getElementById(`rank_${area}_${media}_${i+1}`);
+      if(el){el.value=lines[i];filled++;}
+    }
+    showToast(`✅ ${media}（${area}）に${filled}件貼り付けました`);
+  }).catch(()=>{
+    // クリップボードAPIが使えない場合はプロンプトで入力
+    const text=prompt('店舗名を改行区切りで入力してください（1〜5位）：');
+    if(!text)return;
+    const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0);
+    let filled=0;
+    for(let i=0;i<5&&i<lines.length;i++){
+      const el=document.getElementById(`rank_${area}_${media}_${i+1}`);
+      if(el){el.value=lines[i];filled++;}
+    }
+    if(filled)showToast(`✅ ${filled}件入力しました`);
+  });
+}
+
+let currentInputArea=AREAS[0];
+function renderInputAreaTabs(){
+  document.getElementById('inputAreaTabs').innerHTML=AREAS.map(a=>`<div class="input-area-tab${a===currentInputArea?' active':''}" onclick="switchInputArea('${a}')">${a}</div>`).join('');
+}
+function switchInputArea(area){currentInputArea=area;renderInputAreaTabs();renderInputFormContent();}
+
+function renderInputFormContent(){
+  const area=currentInputArea;const ml=Object.keys(URLS[area]);
+  const wk=document.getElementById('inputWeekDate')?.value||'';const wd=wk?loadData()[wk]:null;
+  // ★タイトルを「各媒体店舗ランキング」に変更（全店）
+  let h=`<div class="input-section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+    <div class="section-title">📺 ${area}：各媒体店舗ランキング</div>
+    
+  </div>
+  <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
+    💡 Excelでこのエリアの日付行の次（1位〜自店順位まで）を全列選択してCtrl+C → 「📋 全媒体まとめて貼り付け」
+  </div>
+  <div class="input-media-grid">`;
+  for(const media of ml){
+    const url=URLS[area]?.[media]||'';const sr=wd?.rankings?.[area]?.[media]?.ranks||[];const sm=wd?.rankings?.[area]?.[media]?.myRanks||{};
+    // メディアブロックのタイトル行に📋貼り付けボタン追加
+    h+=`<div class="input-media-block">
+      <div class="input-media-title">
+        <span>${media}${url?` <a href="${url}" target="_blank" class="media-url-btn">🔗</a>`:''}</span>
+      </div>`;
+    for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名"></div>`;
+    const stores=MY_STORES[area]||[];
+    if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label" style="width:90px;min-width:90px;font-size:9px;color:var(--accent);white-space:nowrap;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;" title="${s}">${s}</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位（例：3位）"></div>`;}}
+    h+=`</div>`;
+  }
+  h+=`</div></div>`;
+  document.getElementById('inputFormContent').innerHTML=h;
+}
+
+function saveData(){
+  const wk=document.getElementById('inputWeekDate')?.value;if(!wk){showToast('集計週を選択してください');return;}
+  const data=loadData();if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};const wd=data[wk];
+  // 現在表示中のエリアのみ保存（他のエリアは既存データを保持）
+  const area=currentInputArea;
+  if(!wd.rankings[area])wd.rankings[area]={};
+  for(const media of Object.keys(URLS[area])){
+    const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`rank_${area}_${media}_${r}`);ranks.push(el?el.value.trim():'');}
+    const myRanks={};for(const s of MY_STORES[area]||[]){const k=s.replace(/\s/g,'_');const el=document.getElementById(`myrank_${area}_${media}_${k}`);if(el)myRanks[s]=el.value.trim();}
+    wd.rankings[area][media]={ranks,myRanks};
+  }
+  saveToStorage(data);updateWeekSelects();showToast(`✅ ${area} を保存しました！`);
+}
+function clearForm(){if(!confirm('現在のエリアの入力をクリアしますか？'))return;document.querySelectorAll('#inputFormContent input[type=text]').forEach(e=>e.value='');}
+function copyFromPrevWeek(){
+  const wk=document.getElementById('inputWeekDate')?.value;
+  if(!wk){showToast('集計週を選択してください');return;}
+  const pk=getPrevWeek(wk);
+  let allData={};
+  try{allData=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
+  const keys=Object.keys(allData).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));
+  if(!allData[pk]){
+    showToast('前週('+pk+')なし。保存済み週:'+keys.join(','));
+    return;
+  }
+  // 媒体ランキングのみコピー（Google検索はコピーしない）
+  if(!allData[wk])allData[wk]={date:wk,rankings:{},google:{}};
+  allData[wk].rankings=JSON.parse(JSON.stringify(allData[pk].rankings||{}));
+  allData[wk].date=wk;
+  localStorage.setItem(SK,JSON.stringify(allData));
+  renderInputFormContent();
+  showToast('📋 '+formatDate(pk)+' のデータをコピーしました');
+}
+
+function renderGoogleSection(){
+  const wk=document.getElementById('googleInputWeekDate')?.value||getNearestMonday();
+  const wd=loadData()[wk];
+  let h='';
+  for(const area of AREAS){
+    const kw=GOOGLE_KEYWORDS[area];const sg=wd?.google?.[area]||[];
+    h+=`<div class="google-area-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+        <div class="google-area-title">📍 ${area}</div>
+      </div>
+      <div class="google-area-kw">${kw}</div>`;
+    for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="ginput_${area}_${r}" value="${esc(sg[r-1]||'')}" placeholder="サイト名"></div>`;
+    h+=`</div>`;
+  }
+  document.getElementById('googleInputGrid').innerHTML=h;
+}
+
+
+
+// ===== ダッシュボード内タブ切替 =====
+let currentDashView = 'all';
+
+function switchDashView(view){
+  currentDashView = view;
+  document.getElementById('dash-view-all').style.display = view==='all' ? 'block' : 'none';
+  document.getElementById('dash-view-area').style.display = view==='area' ? 'block' : 'none';
+  document.getElementById('dash-tab-all').style.background = view==='all' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('dash-tab-all').style.color = view==='all' ? '#fff' : 'var(--text2)';
+  document.getElementById('dash-tab-area').style.background = view==='area' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('dash-tab-area').style.color = view==='area' ? '#fff' : 'var(--text2)';
+  if(view==='area'){
+    // エリアセレクトを初期化
+    const sel = document.getElementById('dashAreaSelect');
+    if(sel && !sel.innerHTML) sel.innerHTML = AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
+    renderDashboardArea();
+  }
+}
+
+function renderDashboardArea(){
+  const wk = document.getElementById('dashWeekSelect')?.value;
+  const ck = document.getElementById('dashWeekCompare')?.value;
+  const area = document.getElementById('dashAreaSelect')?.value;
+  if(!area) return;
+  const data = loadData();
+  const wd = wk ? data[wk] : null;
+  const cd = ck ? data[ck] : null;
+  const el = document.getElementById('dashboardAreaContent');
+  if(!wd){ el.innerHTML='<div class="no-data">データがありません。</div>'; return; }
+
+  const ad = wd.rankings?.[area];
+  const cad = cd?.rankings?.[area];
+  const ml = ad ? Object.keys(ad) : Object.keys(URLS[area]||{});
+
+  let h = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px;">`;
+
+  // 各媒体ブロック（大きく表示）
+  for(const media of ml){
+    const url = URLS[area]?.[media]||'';
+    const md = ad?.[media];
+    const cmd = cad?.[media];
+    const ranks = md?.ranks||[];
+    const cr = cmd?.ranks||[];
+    const my = md?.myRanks||{};
+    const cmy = cmd?.myRanks||{};
+
+    h += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:700;font-size:13px;">${media}</span>
+        ${url ? `<a href="${url}" target="_blank" class="media-url-btn">🔗 開く</a>` : ''}
+      </div>
+      <div style="padding:10px 14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+
+    for(let i=0;i<5;i++){
+      const shop = ranks[i]||'';
+      const cls = ['r1','r2','r3','r4','r5'][i];
+      let df='';
+      if(cd&&shop){const pi=cr.findIndex(s=>isSameShop(s,shop));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+      h+=`<tr style="border-bottom:1px solid rgba(48,54,61,.4);">
+        <td style="padding:6px 4px;width:28px;" class="rank-num ${cls}">${i+1}</td>
+        <td style="padding:6px 4px;font-size:13px;">${shop||'<span style="color:var(--border)">—</span>'}${df}</td>
+      </tr>`;
+    }
+
+    // 自店
+    const stores = MY_STORES[area]||[];
+    if(stores.length){
+      h+=`<tr><td colspan="2" style="padding:4px 0 0;"></td></tr>`;
+      stores.forEach((s,si)=>{
+        const mr = my[s]||'';
+        if(!mr) return;
+        let mdf='';
+        if(cd&&cmy[s]){const cur=parseInt(mr),prv=parseInt(cmy[s]);if(!isNaN(cur)&&!isNaN(prv)){if(prv>cur)mdf=`<span class="diff-up">▲${prv-cur}</span>`;else if(prv<cur)mdf=`<span class="diff-down">▼${cur-prv}</span>`;else mdf='<span class="diff-same">－</span>';}}
+        const colorClass = `my-store-${si}`;
+        h+=`<tr class="my-store-row ${colorClass}" style="border-radius:4px;">
+          <td colspan="2" style="padding:5px 8px;font-size:12px;">
+            <span style="font-size:10px;font-weight:700;color:var(--accent);">${s}</span>：<span class="my-rank-val" style="font-size:13px;">${mr}</span>${mdf}
+          </td>
+        </tr>`;
+      });
+    }
+
+    h+=`</table></div></div>`;
+  }
+
+  h+=`</div>`;
+
+  // Google検索
+  const dashGd = wd.google?.[area]||[];
+  const dashCgd = cd?.google?.[area]||[];
+  const dashKw = GOOGLE_KEYWORDS[area];
+  if(dashGd.some(v=>v)){
+    h+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);">
+        <span style="font-weight:700;font-size:13px;color:var(--accent3);">🔍 Googleワード検索（${dashKw}）</span>
+      </div>
+      <div style="padding:10px 14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+    for(let i=0;i<5;i++){
+      const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+      let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+      h+=`<tr style="border-bottom:1px solid rgba(48,54,61,.4);">
+        <td style="padding:6px 4px;width:28px;" class="rank-num ${cls}">${i+1}</td>
+        <td style="padding:6px 4px;font-size:13px;">${site||'<span style="color:var(--border)">—</span>'}${df}</td>
+      </tr>`;
+    }
+    h+=`</table></div></div>`;
+  }
+
+  el.innerHTML = h;
+}
+
+// ===== Google検索 コピペ機能 =====
+function pasteGoogleFromClipboard(area){
+  navigator.clipboard.readText().then(text=>{
+    const lines=text.split(/\r?\n|\t/).map(s=>s.trim()).filter(s=>s.length>0);
+    if(!lines.length){showToast('クリップボードにテキストがありません');return;}
+    let filled=0;
+    for(let i=0;i<5&&i<lines.length;i++){
+      const el=document.getElementById(`ginput_${area}_${i+1}`);
+      if(el){el.value=lines[i];filled++;}
+    }
+    showToast(`✅ ${area} Google検索に${filled}件貼り付けました`);
+  }).catch(()=>{
+    const text=prompt(`${area} の上位サイト名を改行区切りで入力（1〜5位）：`);
+    if(!text)return;
+    const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0);
+    let filled=0;
+    for(let i=0;i<5&&i<lines.length;i++){
+      const el=document.getElementById(`ginput_${area}_${i+1}`);
+      if(el){el.value=lines[i];filled++;}
+    }
+    if(filled)showToast(`✅ ${filled}件入力しました`);
+  });
+}
+
+
+
+function pasteGoogleBulk(){
+  navigator.clipboard.readText().then(text=>{
+    applyGoogleBulkPaste(text);
+  }).catch(()=>{
+    const text=prompt('Excelから1位〜5位の全エリア分をコピーして貼り付けてください（5行×8列）');
+    if(text) applyGoogleBulkPaste(text);
+  });
+}
+
+function applyGoogleBulkPaste(text){
+  if(!text){showToast('クリップボードにデータがありません');return;}
+  // タブ区切り・改行区切りで2次元配列に変換
+  const rows=text.split(/\r?\n/).map(r=>r.split('\t').map(s=>s.trim())).filter(r=>r.some(v=>v));
+  if(!rows.length){showToast('データが空です');return;}
+
+  let filled=0;
+  // 行=1位〜5位、列=エリア順
+  rows.forEach((row,ri)=>{
+    if(ri>=5) return; // 5行まで
+    AREAS.forEach((area,ci)=>{
+      const el=document.getElementById(`ginput_${area}_${ri+1}`);
+      if(el&&ci<row.length){el.value=row[ci]||'';filled++;}
+    });
+  });
+  // 貼り付けと同時に自動保存
+  const wk=document.getElementById('googleInputWeekDate')?.value;
+  if(wk){
+    const data=loadData();
+    if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};
+    if(!data[wk].google)data[wk].google={};
+    AREAS.forEach(area=>{
+      const ranks=[];
+      for(let r=1;r<=5;r++){const el=document.getElementById(`ginput_${area}_${r}`);ranks.push(el?el.value.trim():'');}
+      if(ranks.some(v=>v))data[wk].google[area]=ranks;
+    });
+    saveToStorage(data);updateWeekSelects();renderGoogleView();
+    showToast(`✅ Google検索：貼り付けて保存しました`);
+  } else {
+    showToast(`✅ Google検索：貼り付けました（集計週を選択して保存してください）`);
+  }
+}
+
+
+function clearGoogleForm(){
+  if(!confirm('現在のGoogle検索入力をクリアしますか？')) return;
+  AREAS.forEach(area=>{
+    for(let r=1;r<=5;r++){
+      const el=document.getElementById(`ginput_${area}_${r}`);
+      if(el) el.value='';
+    }
+  });
+}
+
+function copyGoogleFromPrevWeek(){
+  const wk=document.getElementById('googleInputWeekDate')?.value;
+  if(!wk){showToast('集計週を選択してください');return;}
+  const pk=getPrevWeek(wk);
+  let allData={};
+  try{allData=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
+  const prevData=allData[pk];
+  if(!prevData||!prevData.google){
+    showToast('前週('+pk+')のGoogle検索データがありません');return;
+  }
+  // 前週のgoogleデータを入力フォームに反映
+  AREAS.forEach(area=>{
+    const glist=prevData.google[area]||[];
+    for(let r=1;r<=5;r++){
+      const el=document.getElementById('ginput_'+area+'_'+r);
+      if(el) el.value=glist[r-1]||'';
+    }
+  });
+  showToast('📋 '+formatDate(pk)+' のGoogle検索データをコピーしました');
+}
+
+function saveGoogleData(){
+  const wk=document.getElementById('googleInputWeekDate')?.value;if(!wk){showToast('集計週を選択してください');return;}
+  const data=loadData();if(!data[wk])data[wk]={date:wk,rankings:{},google:{}};if(!data[wk].google)data[wk].google={};
+  for(const area of AREAS){
+    const ranks=[];for(let r=1;r<=5;r++){const el=document.getElementById(`ginput_${area}_${r}`);ranks.push(el?el.value.trim():'');}
+    data[wk].google[area]=ranks;
+  }
+  saveToStorage(data);updateWeekSelects();renderGoogleView();showToast('✅ Google検索順位を保存しました！');
+}
+
+function renderGoogleView(){
+  const wk=document.getElementById('googleWeekSelect')?.value;
+  const ck=document.getElementById('googleWeekCompare')?.value;
+  const data=loadData();const wd=wk?data[wk]:null;const cd=ck?data[ck]:null;
+  const el=document.getElementById('googleViewContent');
+  if(!wd){el.innerHTML='<div class="no-data">データがありません。上のフォームから入力して保存してください。</div>';return;}
+  let h=`<div class="status-bar"><div class="status-dot"></div>集計週：${formatDate(wk)}${cd?`　比較：${formatDate(ck)}`:''}　Googleワード検索上位5（CP求人サイトのみ）</div><div class="google-view-grid">`;
+  for(const area of AREAS){
+    const gd=wd.google?.[area]||[];const cgd=cd?.google?.[area]||[];const kw=GOOGLE_KEYWORDS[area];
+    h+=`<div class="google-card"><div class="google-card-header"><div style="font-weight:700;font-size:11px;">📍 ${area}</div><div class="google-card-kw">${kw}</div></div><div class="google-card-body">`;
+    for(let i=0;i<5;i++){
+      const site=gd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+      let df='';if(cd&&site){const pi=cgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+      h+=`<div class="google-row"><span class="rank-num ${cls}">${i+1}</span><span class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</span></div>`;
+    }
+    // Google検索順位を追加
+    const dashGd=wd.google?.[area]||[];
+    const dashCgd=cd?.google?.[area]||[];
+    const dashKw=GOOGLE_KEYWORDS[area];
+    if(dashGd.some(v=>v)){
+      h+=`<div class="media-block" style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">
+        <div class="media-head" style="color:var(--accent3);">🔍 Google検索（${dashKw}）</div>
+        <table class="rank-table">`;
+      for(let i=0;i<5;i++){
+        const site=dashGd[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
+        let df='';if(cd&&site){const pi=dashCgd.findIndex(s=>isSameShop(s,site));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        h+=`<tr><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${site||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+      }
+      h+=`</table></div>`;
+    }
+    h+=`</div></div>`;
+  }
+  h+=`</div>`;el.innerHTML=h;
+}
+
+function renderUrls(){
+  document.getElementById('openAllGrid').innerHTML=AREAS.map(area=>`<button class="open-area-btn" onclick="openAreaUrls('${area}')">📍 ${area}<span class="cnt">${Object.keys(URLS[area]).length}サイト</span></button>`).join('');
+  const allMedia=['シティヘブン','デリヘルタウン','風俗じゃぱん','デリヘルじゃぱん','駅ちか人気！','口コミ風俗情報局','ぴゅあらば','バナナビ'];
+  let h=`<thead><tr><th>エリア</th>${allMedia.map(m=>`<th>${m}</th>`).join('')}</tr></thead><tbody>`;
+  for(const area of AREAS){
+    h+=`<tr><td style="font-weight:700;white-space:nowrap;">📍 ${area}</td>`;
+    for(const m of allMedia){const url=URLS[area]?.[m];h+=`<td>${url?`<a href="${url}" target="_blank" class="url-link">開く</a>`:'-'}</td>`;}
+    h+=`</tr>`;
+  }
+  h+=`</tbody>`;document.getElementById('urlTable').innerHTML=h;
+}
+function openAreaUrls(area){Object.values(URLS[area]).forEach((url,i)=>setTimeout(()=>window.open(url,'_blank'),i*200));showToast(`📂 ${area} を開きました`);}
+function openAllUrls(){
+  const all=[...new Set(AREAS.flatMap(a=>Object.values(URLS[a])))];
+  if(!confirm(`全${all.length}個のURLを開きます。ポップアップを許可してください。`))return;
+  all.forEach((url,i)=>setTimeout(()=>window.open(url,'_blank'),i*150));showToast(`🔗 全${all.length}サイトを開きます`);
+}
+
+function renderHistory(){
+  const data=loadData();const weeks=Object.keys(data).sort().reverse();const el=document.getElementById('historyContent');
+  if(!weeks.length){el.innerHTML='<div class="no-data">保存データがありません。</div>';return;}
+  el.innerHTML=weeks.map(w=>`<div class="history-item"><span class="history-date">📅 ${formatDate(w)}</span><div style="display:flex;gap:6px;"><button class="btn btn-ghost" onclick="loadWeekToForm('${w}')">✏️ 編集</button><button class="btn btn-ghost" onclick="exportCsvWeek('${w}')">📥 CSV</button><button class="btn btn-danger" onclick="deleteWeek('${w}')">🗑️</button></div></div>`).join('');
+}
+function loadWeekToForm(wk){document.getElementById('inputWeekDate').value=wk;showTab('input');}
+function deleteWeek(wk){if(!confirm(`${formatDate(wk)} のデータを削除しますか？`))return;const data=loadData();delete data[wk];saveToStorage(data);updateWeekSelects();renderHistory();showToast('削除しました');}
+
+function exportCsv(){const data=loadData();const weeks=Object.keys(data).sort().reverse();if(!weeks.length){showToast('データがありません');return;}exportCsvWeek(weeks[0]);}
+function exportCsvWeek(wk){
+  const data=loadData();const wd=data[wk];if(!wd){showToast('データがありません');return;}
+  let csv=`集計週,${formatDate(wk)}\n\n【媒体別店舗ランキング上位5】\nエリア,媒体,1位,2位,3位,4位,5位,自店順位\n`;
+  for(const area of AREAS){
+    const ml=wd.rankings?.[area]?Object.keys(wd.rankings[area]):Object.keys(URLS[area]);
+    for(const media of ml){
+      const md=wd.rankings?.[area]?.[media];
+      const ranks=(md?.ranks||['','','','','']).map(r=>r||'');
+      const myStr=Object.entries(md?.myRanks||{}).filter(([,v])=>v).map(([s,r])=>`${s}:${r}位`).join(' / ');
+      csv+=`${area},${media},${ranks.join(',')},${myStr}\n`;
+    }
+  }
+  csv+=`\n【Googleワード検索上位5（CP求人サイトのみ）】\nエリア,検索ワード,1位,2位,3位,4位,5位\n`;
+  for(const area of AREAS){const gd=(wd.google?.[area]||['','','','','']).map(r=>r||'');csv+=`${area},${GOOGLE_KEYWORDS[area]},${gd.join(',')}\n`;}
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`ranking_${wk}.csv`;a.click();
+  showToast(`📥 ${formatDate(wk)} のCSVをダウンロードしました`);
+}
+
+
+const INITIAL_DATA={"2026-05-04":{"date":"2026-05-04","rankings":{"西船橋":{"シティヘブン":{"ranks":["秘密倶楽部 凛 船橋本店","西船人妻花壇","丸妻西船橋","One More 奥様 西船橋店","人妻の蜜 西船橋店"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"3位"}},"デリヘルタウン":{"ranks":["西船人妻花壇","One More 奥様 西船橋店","五十路マダムエクスプレス船橋店","人妻の蜜 西船橋店","人妻の秘密 船橋"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"7位"}},"風俗じゃぱん":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","秘密倶楽部 凛 船橋本店","人妻の秘密 西船橋店","完熟バナナ 千葉"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"6位"}},"デリヘルじゃぱん":{"ranks":["即イキ淫乱倶楽部 船橋店","しろうとファンタジー 船橋店","西船巨乳ぽっちゃり 乳神さま","Cleopatra",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}},"駅ちか人気！":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","五十路マダムエクスプレス船橋店","西船橋 ムンムン熟女妻","丸妻西船橋"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"5位"}},"口コミ風俗情報局":{"ranks":["完熟ばなな 千葉","西船人妻花壇","丸妻西船橋","人妻の秘密船橋店","秘密倶楽部 凛 船橋本店"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"3位"}},"ぴゅあらば":{"ranks":["マネージャーがエロ過ぎて我慢できないからLOVE","玄関開けたら即パクおばさん","しろうとファンタジー 船橋店","",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}}},"錦糸町":{"シティヘブン":{"ranks":["E+錦糸町","E+アイドルスクール","ウルトラハピネス","ウルトラブレイズ","One More 奥様 錦糸町"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"9位"}},"デリヘルタウン":{"ranks":["丸妻錦糸町","熟女の風俗最終章 錦糸町","出会い系人妻ネットワーク錦糸町","One More 奥様 錦糸町","One More 奥様 小岩店"],"myRanks":{"錦糸町人妻花壇":"10位","丸妻錦糸町":"1位"}},"風俗じゃぱん":{"ranks":["東京デザインリング","錦糸町人妻セレブリティ","半熟ばなな錦糸町","熟女の風俗最終章 錦糸町","無限発射!!奥様デリ急便"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"デリヘルじゃぱん":{"ranks":["東京デザインリング","半熟ばなな錦糸町","結婚三年目の刺激が欲しいM妻たち","ミセスの手ほどき 錦糸町店","ピンキー"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"駅ちか人気！":{"ranks":["東京デザインリング","One More 奥様 錦糸町","錦糸町ミセスアロマ","丸妻錦糸町店","人妻ターミナル ～山手線アナザー奥様～"],"myRanks":{"錦糸町人妻花壇":"11位","丸妻錦糸町":"4位"}},"口コミ風俗情報局":{"ranks":["熟女の風俗最終章 錦糸町","東京デザインリング","One More 奥様 錦糸町","丸妻錦糸町店","半熟ばなな錦糸町"],"myRanks":{"錦糸町人妻花壇":"15位","丸妻錦糸町":"4位"}},"ぴゅあらば":{"ranks":["BBW錦糸町店","熟女の風俗最終章 錦糸町","One More 奥様 錦糸町","錦糸町快楽M性感倶楽部 ～前立腺マッサージ専門",""],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}}},"沼津":{"シティヘブン":{"ranks":["ほんつま沼津店","沼津人妻花壇","熟女の風俗最終章","",""],"myRanks":{"沼津人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["熟女の風俗最終章","沼津人妻花壇","こあくまな熟女たち","cuteなミセス","沼津人妻城"],"myRanks":{"沼津人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻デリヘル お蝶婦人","奥さまCafe","Tiara-ティアラ-","",""],"myRanks":{"沼津人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["沼津人妻花壇","サンキュー沼津店","奥さまCafe","熟女の風俗最終章","人妻デリヘル お蝶婦人"],"myRanks":{"沼津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["奥様ブランド アニバーサリー","サンキュー沼津店","欲しくて我慢できないドM妻","女商事～奥さま部署～あなた許して","痴女の悪戯 ～ド淫乱な人妻専門店"],"myRanks":{"沼津人妻花壇":"9位"}},"口コミ風俗情報局":{"ranks":["艶美の人妻沼津店 ～濃厚オプション無双～","痴女の悪戯 ド淫乱な人妻専門店","人妻デリヘル お蝶婦人","ほんつま沼津店","沼津人妻花壇"],"myRanks":{"沼津人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["熟女の風俗最終章","沼津人妻花壇","五十路マダム沼津店","こあくまな熟女たち","ほんつま沼津店"],"myRanks":{"沼津人妻花壇":"2位"}},"バナナビ":{"ranks":["サンボア","いちゃぷよ★ぽっちゃdoll","奥さまCafe","即会い奥様","サンキュー沼津"],"myRanks":{"沼津人妻花壇":"ランク外"}}},"千葉":{"シティヘブン":{"ranks":["コスプレ戦隊 ヌケルンジャー千葉店","明日にときめけ！ にゃんにゃん学園in千葉","T-バックス","千葉サンキュー","E+アイドルスクール千葉・栄町店"],"myRanks":{"千葉人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","こあくまな熟女たち","秘密倶楽部 凛 千葉","ベストマダム"],"myRanks":{"千葉人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["千葉人妻花壇","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","ママの婚活 CHIBA","外国人風俗宅急便"],"myRanks":{"千葉人妻花壇":"1位"}},"デリヘルじゃぱん":{"ranks":["千葉サンキュー","外国人風俗宅急便","即〇デリヘル","還暦の情欲 アラ還の溢れる欲望と愛液",""],"myRanks":{"千葉人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["千葉人妻セレブリティ","千葉boobs！ 巨乳専門店","千葉人妻花壇","ＤＩＥ−ＳＥＬ千葉店","T-バックス"],"myRanks":{"千葉人妻花壇":"3位"}},"口コミ風俗情報局":{"ranks":["ママの婚活 CHIBA","こあくまな熟女たち","千葉人妻セレブリティ","千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店"],"myRanks":{"千葉人妻花壇":"4位"}},"ぴゅあらば":{"ranks":["千葉サンキュー","乱","ママMILK","射楽 ～スカトロ・AF専門～","千葉人妻セレブリティ"],"myRanks":{"千葉人妻花壇":"ランク外"}}},"成田":{"シティヘブン":{"ranks":["成田デリヘル 『生パネル』伝説","成田人妻花壇","成田しろうと物語","gossip girl 成田店","成田富里 ちゃんこ"],"myRanks":{"成田人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["成田人妻花壇","成田人妻最高級倶楽部","人妻の秘密 成田店","成田人妻講座","脱がされたい人妻成田店"],"myRanks":{"成田人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["人妻の秘密 成田店","最高級 エロエロ奥様 成田店","成田人妻最高級倶楽部","極上！三十路奥さま",""],"myRanks":{"成田人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["成田若妻即即サークル","千葉しろうと物語","ラブリータイム","淫乱色欲妻","人妻とヤれるんです"],"myRanks":{"成田人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["成田若妻即即サークル","成田人妻花壇","成田人妻講座","極上！三十路奥さま","美しすぎる美熟女"],"myRanks":{"成田人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["人妻の秘密 成田店","成田人妻講座","成田若妻即即サークル","極上！三十路奥さま","成田人妻花壇"],"myRanks":{"成田人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"成田人妻花壇":"ランク外"}}},"木更津":{"シティヘブン":{"ranks":["木更津人妻花壇","変態どっとこむ 即尺痴女伝説","人妻楼 木更津店","即イキ淫乱クラブ木更津","ちゃんこ木更津君津"],"myRanks":{"木更津人妻花壇":"1位"}},"デリヘルタウン":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","人妻楼 木更津店","日本妻","脱がされたい人妻-木更津"],"myRanks":{"木更津人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["人妻楼 木更津店","木更津人妻花壇","脱がされたい人妻 木更津","木更津 魅惑の人妻",""],"myRanks":{"木更津人妻花壇":"2位"}},"デリヘルじゃぱん":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","クレオパトラ木更津","BI・MA・JO",""],"myRanks":{"木更津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["木更津人妻花壇","木更津 魅惑の人妻","脱がされたい人妻-木更津","遊び妻 木更津","昼顔妻"],"myRanks":{"木更津人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["木更津人妻花壇","脱がされたい人妻-木更津","人妻楼 木更津店","遊び妻 木更津","木更津魅惑の人妻"],"myRanks":{"木更津人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"木更津人妻花壇":"ランク外"}}},"神栖":{"シティヘブン":{"ranks":["神栖レッドダイヤ","デリヘルコレクション【総本店】","茨城神栖ちゃんこ","Masquerade",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["神栖人妻花壇","スッキリ商事","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店"],"myRanks":{"神栖人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["神栖レッドダイヤ","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店","人妻とヤれるんです"],"myRanks":{"神栖人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["Fairy","神栖人妻花壇","奥様宅配便 神栖支店","人妻とヤれるんです","熟女たちの宴"],"myRanks":{"神栖人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["神栖人妻花壇","奥様宅配便 神栖支店","人妻最後の砦 神栖店","Polaris神栖",""],"myRanks":{"神栖人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}}},"水戸":{"シティヘブン":{"ranks":["INFINITY GOLD","DIVAセカンドシーズン","水戸人妻花壇","高級回春＆Ｍ性感エステ 癒し娘診療所","奥様特急  水戸・ひたちなか店"],"myRanks":{"水戸人妻花壇":"3位"}},"デリヘルタウン":{"ranks":["キレイ計画in水戸","水戸人妻花壇","奥様特急  水戸・ひたちなか店","人妻最後の砦 水戸店","水戸人妻隊"],"myRanks":{"水戸人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["DIVAセカンドシーズン","INFINITY GOLD","水戸ちゃんこ","",""],"myRanks":{"水戸人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["水戸人妻花壇","水戸ちゃんこ","水戸人妻隊","キレイ計画in水戸","素人専門☆厳選サークル"],"myRanks":{"水戸人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["水戸人妻花壇","抑えきれない熟女","貪欲に生きる還暦熟女","人妻密会クラブ ～マンダリン～","若妻デリヘル  ～ルージュ～"],"myRanks":{"水戸人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["水戸人妻隊","水戸人妻花壇","人妻最後の砦 水戸店","人妻恋愛サークル","奥様宅配便 水戸支店"],"myRanks":{"水戸人妻花壇":"2位"}},"ぴゅあらば":{"ranks":["DIVAセカンドシーズン","水戸サンキュー","","",""],"myRanks":{"水戸人妻花壇":"ランク外"}}}},"google":{"西船橋":["バニラ （西船橋）","バニラ （西船橋・デリ）","COCOA","いちごなび","口コミ風俗情報局"],"錦糸町":["バニラ （錦糸町・亀戸）","口コミ風俗情報局","ガールズヘブン","バニラ （錦糸町・デリ）","COCOA"],"沼津":["バニラ （沼津）","ガールズヘブン","いちごなび","メンズバニラ","はじ風"],"千葉":["バニラ （栄町）","いちごなび","バニラ （栄町・デリ）","COCOA","メンズバニラ"],"成田":["バニラ （成田）","バニラ （成田・デリ）","ももジョブ","COCOA","メンズバニラ"],"木更津":["バニラ （木更津・君津）","口コミ風俗情報局","COCOA","バニラ （木更津・デリ）","メンズバニラ"],"神栖":["バニラ （神栖）","口コミ風俗情報局","COCOA","バニラ （神栖・デリヘル）","メンズバニラ"],"水戸":["バニラ （水戸）","バニラ （水戸・デリヘル）","いちごなび","メンズバニラ","COCOA"]}},"2026-05-11":{"date":"2026-05-11","rankings":{"西船橋":{"シティヘブン":{"ranks":["秘密倶楽部 凛 船橋本店","西船人妻花壇","丸妻西船橋","One More 奥様 西船橋店","人妻の蜜 西船橋店"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"3位"}},"デリヘルタウン":{"ranks":["西船人妻花壇","One More 奥様 西船橋店","五十路マダムエクスプレス船橋店","人妻の蜜 西船橋店","人妻の秘密 船橋"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"6位"}},"風俗じゃぱん":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","秘密倶楽部 凛 船橋本店","人妻の秘密 西船橋店","完熟バナナ 千葉"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"6位"}},"デリヘルじゃぱん":{"ranks":["即イキ淫乱倶楽部 船橋店","しろうとファンタジー 船橋店","西船巨乳ぽっちゃり 乳神さま","Cleopatra",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}},"駅ちか人気！":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","五十路マダムエクスプレス船橋店","西船橋 ムンムン熟女妻","丸妻西船橋"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"5位"}},"口コミ風俗情報局":{"ranks":["完熟ばなな 千葉","西船人妻花壇","丸妻西船橋","人妻の秘密船橋店","秘密倶楽部 凛 船橋本店"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"3位"}},"ぴゅあらば":{"ranks":["マネージャーがエロ過ぎて我慢できないからLOVE","玄関開けたら即パクおばさん","しろうとファンタジー 船橋店","",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}}},"錦糸町":{"シティヘブン":{"ranks":["E+アイドルスクール","E+錦糸町","ウルトラハピネス","ウルトラブレイズ","One More 奥様 錦糸町"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"9位"}},"デリヘルタウン":{"ranks":["丸妻錦糸町","熟女の風俗最終章 錦糸町","出会い系人妻ネットワーク錦糸町","One More 奥様 錦糸町","One More 奥様 小岩店"],"myRanks":{"錦糸町人妻花壇":"10位","丸妻錦糸町":"1位"}},"風俗じゃぱん":{"ranks":["東京デザインリング","錦糸町人妻セレブリティ","半熟ばなな錦糸町","熟女の風俗最終章 錦糸町","無限発射!!奥様デリ急便"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"デリヘルじゃぱん":{"ranks":["東京デザインリング","半熟ばなな錦糸町","結婚三年目の刺激が欲しいM妻たち","ミセスの手ほどき 錦糸町店","ピンキー"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"駅ちか人気！":{"ranks":["東京デザインリング","One More 奥様 錦糸町","錦糸町ミセスアロマ","丸妻錦糸町店","人妻ターミナル ～山手線アナザー奥様～"],"myRanks":{"錦糸町人妻花壇":"13位","丸妻錦糸町":"4位"}},"口コミ風俗情報局":{"ranks":["熟女の風俗最終章 錦糸町","東京デザインリング","One More 奥様 錦糸町","丸妻錦糸町店","半熟ばなな錦糸町"],"myRanks":{"錦糸町人妻花壇":"15位","丸妻錦糸町":"4位"}},"ぴゅあらば":{"ranks":["BBW錦糸町店","One More 奥様 錦糸町","熟女の風俗最終章 錦糸町","",""],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}}},"沼津":{"シティヘブン":{"ranks":["ほんつま沼津店","沼津人妻花壇","熟女の風俗最終章","",""],"myRanks":{"沼津人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["熟女の風俗最終章","沼津人妻花壇","こあくまな熟女たち","cuteなミセス","沼津人妻城"],"myRanks":{"沼津人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻デリヘル お蝶婦人","奥さまCafe","Tiara-ティアラ-","",""],"myRanks":{"沼津人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["沼津人妻花壇","サンキュー沼津店","奥さまCafe","熟女の風俗最終章","人妻デリヘル お蝶婦人"],"myRanks":{"沼津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["奥様ブランド アニバーサリー","サンキュー沼津店","欲しくて我慢できないドM妻","女商事～奥さま部署～あなた許して","痴女の悪戯 ～ド淫乱な人妻専門店"],"myRanks":{"沼津人妻花壇":"9位"}},"口コミ風俗情報局":{"ranks":["艶美の人妻沼津店 ～濃厚オプション無双～","痴女の悪戯 ド淫乱な人妻専門店","人妻デリヘル お蝶婦人","ほんつま沼津店","沼津人妻花壇"],"myRanks":{"沼津人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["熟女の風俗最終章","沼津人妻花壇","五十路マダム沼津店","いちゃぷよ★ぽっちゃdoll","ほんつま沼津店"],"myRanks":{"沼津人妻花壇":"2位"}},"バナナビ":{"ranks":["サンキュー沼津","サンボア","いちゃぷよ★ぽっちゃdoll","奥さまCafe","即会い奥様"],"myRanks":{"沼津人妻花壇":"ランク外"}}},"千葉":{"シティヘブン":{"ranks":["E+アイドルスクール千葉・栄町店","明日にときめけ！ にゃんにゃん学園in千葉","コスプレ戦隊 ヌケルンジャー千葉店","T-バックス","千葉サンキュー"],"myRanks":{"千葉人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","こあくまな熟女たち","秘密倶楽部 凛 千葉","ベストマダム"],"myRanks":{"千葉人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["千葉人妻花壇","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","ママの婚活 CHIBA","外国人風俗宅急便"],"myRanks":{"千葉人妻花壇":"1位"}},"デリヘルじゃぱん":{"ranks":["千葉サンキュー","外国人風俗宅急便","即〇デリヘル","還暦の情欲 アラ還の溢れる欲望と愛液",""],"myRanks":{"千葉人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["千葉人妻セレブリティ","千葉boobs！ 巨乳専門店","千葉人妻花壇","ＤＩＥ−ＳＥＬ千葉店","E+アイドルスクール千葉・栄町店"],"myRanks":{"千葉人妻花壇":"3位"}},"口コミ風俗情報局":{"ranks":["ママの婚活 CHIBA","こあくまな熟女たち","千葉人妻セレブリティ","千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店"],"myRanks":{"千葉人妻花壇":"4位"}},"ぴゅあらば":{"ranks":["千葉サンキュー","ママMILK","乱","射楽 ～スカトロ・AF専門～","千葉しろうと物語"],"myRanks":{"千葉人妻花壇":"ランク外"}}},"成田":{"シティヘブン":{"ranks":["成田デリヘル 『生パネル』伝説","成田人妻花壇","成田しろうと物語","gossip girl 成田店","もも尻本店"],"myRanks":{"成田人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["成田人妻最高級倶楽部","成田人妻花壇","人妻の秘密 成田店","成田人妻講座","脱がされたい人妻成田店"],"myRanks":{"成田人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻の秘密 成田店","最高級 エロエロ奥様 成田店","成田人妻最高級倶楽部","極上！三十路奥さま",""],"myRanks":{"成田人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["成田若妻即即サークル","千葉しろうと物語","ラブリータイム","極上！三十路奥さま","人妻とヤれるんです"],"myRanks":{"成田人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["成田人妻花壇","成田若妻即即サークル","成田人妻講座","極上！三十路奥さま","美しすぎる美熟女"],"myRanks":{"成田人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["人妻の秘密 成田店","成田人妻講座","成田若妻即即サークル","極上！三十路奥さま","成田人妻花壇"],"myRanks":{"成田人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"成田人妻花壇":"ランク外"}}},"木更津":{"シティヘブン":{"ranks":["木更津人妻花壇","変態どっとこむ 即尺痴女伝説","即イキ淫乱クラブ木更津","人妻楼 木更津店","ちゃんこ木更津君津"],"myRanks":{"木更津人妻花壇":"1位"}},"デリヘルタウン":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","人妻楼 木更津店","日本妻","脱がされたい人妻-木更津"],"myRanks":{"木更津人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["人妻楼 木更津店","木更津人妻花壇","脱がされたい人妻 木更津","木更津 魅惑の人妻",""],"myRanks":{"木更津人妻花壇":"2位"}},"デリヘルじゃぱん":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","クレオパトラ木更津","BI・MA・JO",""],"myRanks":{"木更津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["木更津人妻花壇","木更津 魅惑の人妻","脱がされたい人妻-木更津","遊び妻 木更津","昼顔妻"],"myRanks":{"木更津人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["木更津人妻花壇","脱がされたい人妻-木更津","人妻楼 木更津店","遊び妻 木更津","木更津魅惑の人妻"],"myRanks":{"木更津人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"木更津人妻花壇":"ランク外"}}},"神栖":{"シティヘブン":{"ranks":["神栖レッドダイヤ","デリヘルコレクション【総本店】","茨城神栖ちゃんこ","Masquerade",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","スッキリ商事","Fairy","人妻最後の砦 神栖店"],"myRanks":{"神栖人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["神栖レッドダイヤ","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店","人妻とヤれるんです"],"myRanks":{"神栖人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["Fairy","神栖人妻花壇","奥様宅配便 神栖支店","人妻とヤれるんです","熟女たちの宴"],"myRanks":{"神栖人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["神栖人妻花壇","奥様宅配便 神栖支店","人妻最後の砦 神栖店","Polaris神栖",""],"myRanks":{"神栖人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}}},"水戸":{"シティヘブン":{"ranks":["INFINITY GOLD","DIVAセカンドシーズン","水戸人妻花壇","高級回春＆Ｍ性感エステ 癒し娘診療所","奥様特急  水戸・ひたちなか店"],"myRanks":{"水戸人妻花壇":"3位"}},"デリヘルタウン":{"ranks":["キレイ計画in水戸","水戸人妻花壇","奥様特急  水戸・ひたちなか店","人妻最後の砦 水戸店","水戸人妻隊"],"myRanks":{"水戸人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["DIVAセカンドシーズン","INFINITY GOLD","水戸ちゃんこ","",""],"myRanks":{"水戸人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["水戸人妻花壇","水戸ちゃんこ","水戸人妻隊","キレイ計画in水戸","素人専門☆厳選サークル"],"myRanks":{"水戸人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["水戸人妻花壇","抑えきれない熟女","貪欲に生きる還暦熟女","若妻デリヘル  ～ルージュ～","人妻密会クラブ ～マンダリン～"],"myRanks":{"水戸人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["水戸人妻隊","水戸人妻花壇","人妻最後の砦 水戸店","人妻恋愛サークル","奥様宅配便 水戸支店"],"myRanks":{"水戸人妻花壇":"2位"}},"ぴゅあらば":{"ranks":["DIVAセカンドシーズン","水戸サンキュー","","",""],"myRanks":{"水戸人妻花壇":"ランク外"}}}},"google":{"西船橋":["バニラ （西船橋）","いちごなび","COCOA","バニラ （西船橋・デリ）","口コミ風俗情報局"],"錦糸町":["バニラ （錦糸町・亀戸）","口コミ風俗情報局","ガールズヘブン","バニラ （錦糸町・デリ）","COCOA"],"沼津":["バニラ （沼津）","ガールズヘブン","いちごなび","メンズバニラ","はじ風"],"千葉":["バニラ （栄町）","いちごなび","COCOA","Qプリ","バニラ （栄町・デリ）"],"成田":["バニラ （成田）","バニラ （成田・デリ）","COCOA","メンズバニラ","ももジョブ"],"木更津":["バニラ （木更津・君津）","口コミ風俗情報局","COCOA","バニラ （木更津・デリ）","メンズバニラ"],"神栖":["バニラ （神栖）","口コミ風俗情報局","COCOA","メンズバニラ","バニラ（神栖デリ）"],"水戸":["バニラ （水戸）","COCOA","いちごなび","バニラ （水戸・デリヘル）","メンズバニラ"]}},"2026-05-18":{"date":"2026-05-18","rankings":{"西船橋":{"シティヘブン":{"ranks":["西船人妻花壇","秘密倶楽部 凛 船橋本店","丸妻西船橋","One More 奥様 西船橋店","人妻の蜜 西船橋店"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"3位"}},"デリヘルタウン":{"ranks":["西船人妻花壇","One More 奥様 西船橋店","五十路マダムエクスプレス船橋店","人妻の蜜 西船橋店","人妻の秘密 船橋"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"6位"}},"風俗じゃぱん":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","秘密倶楽部 凛 船橋本店","人妻の秘密 西船橋店","完熟バナナ 千葉"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"7位"}},"デリヘルじゃぱん":{"ranks":["即イキ淫乱倶楽部 船橋店","しろうとファンタジー 船橋店","西船巨乳ぽっちゃり 乳神さま","Cleopatra",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}},"駅ちか人気！":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","五十路マダムエクスプレス船橋店","西船橋 ムンムン熟女妻","丸妻西船橋"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"5位"}},"口コミ風俗情報局":{"ranks":["西船人妻花壇","完熟ばなな 千葉","丸妻西船橋","人妻の秘密船橋店","秘密倶楽部 凛 船橋本店"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"3位"}},"ぴゅあらば":{"ranks":["マネージャーがエロ過ぎて我慢できないからLOVE","玄関開けたら即パクおばさん","しろうとファンタジー 船橋店","",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}}},"錦糸町":{"シティヘブン":{"ranks":["E+アイドルスクール","E+錦糸町","ウルトラハピネス","ウルトラブレイズ","Chloe錦糸町店  S級素人清楚系デリヘル"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"9位"}},"デリヘルタウン":{"ranks":["丸妻錦糸町","熟女の風俗最終章 錦糸町","出会い系人妻ネットワーク錦糸町","One More 奥様 錦糸町","One More 奥様 小岩店"],"myRanks":{"錦糸町人妻花壇":"11位","丸妻錦糸町":"1位"}},"風俗じゃぱん":{"ranks":["東京デザインリング","錦糸町人妻セレブリティ","熟女の風俗最終章 錦糸町","半熟ばなな錦糸町","無限発射!!奥様デリ急便"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"デリヘルじゃぱん":{"ranks":["東京デザインリング","半熟ばなな錦糸町","結婚三年目の刺激が欲しいM妻たち","ミセスの手ほどき 錦糸町店","ピンキー"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"駅ちか人気！":{"ranks":["東京デザインリング","One More 奥様 錦糸町","錦糸町ミセスアロマ","丸妻錦糸町店","人妻ターミナル ～山手線アナザー奥様～"],"myRanks":{"錦糸町人妻花壇":"11位","丸妻錦糸町":"4位"}},"口コミ風俗情報局":{"ranks":["熟女の風俗最終章 錦糸町","東京デザインリング","One More 奥様 錦糸町","丸妻錦糸町店","半熟ばなな錦糸町"],"myRanks":{"錦糸町人妻花壇":"15位","丸妻錦糸町":"4位"}},"ぴゅあらば":{"ranks":["BBW錦糸町店","One More 奥様 錦糸町","熟女の風俗最終章 錦糸町","",""],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}}},"沼津":{"シティヘブン":{"ranks":["ほんつま沼津店","沼津人妻花壇","熟女の風俗最終章","",""],"myRanks":{"沼津人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["熟女の風俗最終章","沼津人妻花壇","こあくまな熟女たち","cuteなミセス","沼津人妻城"],"myRanks":{"沼津人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻デリヘル お蝶婦人","奥さまCafe","Tiara-ティアラ-","",""],"myRanks":{"沼津人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["沼津人妻花壇","サンキュー沼津店","奥さまCafe","熟女の風俗最終章","人妻デリヘル お蝶婦人"],"myRanks":{"沼津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["奥様ブランド アニバーサリー","サンキュー沼津店","女商事～奥さま部署～あなた許して","欲しくて我慢できないドM妻","痴女の悪戯 ～ド淫乱な人妻専門店"],"myRanks":{"沼津人妻花壇":"9位"}},"口コミ風俗情報局":{"ranks":["艶美の人妻沼津店 ～濃厚オプション無双～","痴女の悪戯 ド淫乱な人妻専門店","人妻デリヘル お蝶婦人","ほんつま沼津店","沼津人妻花壇"],"myRanks":{"沼津人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["熟女の風俗最終章","五十路マダム沼津店","沼津人妻花壇","ほんつま沼津店","人妻デリヘル お蝶婦人"],"myRanks":{"沼津人妻花壇":"3位"}},"バナナビ":{"ranks":["サンキュー沼津","サンボア","いちゃぷよ★ぽっちゃdoll","奥さまCafe","即会い奥様"],"myRanks":{"沼津人妻花壇":"ランク外"}}},"千葉":{"シティヘブン":{"ranks":["E+アイドルスクール千葉・栄町店","明日にときめけ！ にゃんにゃん学園in千葉","コスプレ戦隊 ヌケルンジャー千葉店","T-バックス","千葉サンキュー"],"myRanks":{"千葉人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","こあくまな熟女たち","秘密倶楽部 凛 千葉","ベストマダム"],"myRanks":{"千葉人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["千葉人妻花壇","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","ママの婚活 CHIBA","外国人風俗宅急便"],"myRanks":{"千葉人妻花壇":"1位"}},"デリヘルじゃぱん":{"ranks":["千葉サンキュー","熟れたオカン","外国人風俗宅急便","即〇デリヘル","還暦の情欲 アラ還の溢れる欲望と愛液"],"myRanks":{"千葉人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["千葉人妻セレブリティ","千葉人妻花壇","千葉boobs！ 巨乳専門店","E+アイドルスクール千葉・栄町店","ＤＩＥ−ＳＥＬ千葉店"],"myRanks":{"千葉人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["千葉人妻花壇","ママの婚活 CHIBA","こあくまな熟女たち","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店"],"myRanks":{"千葉人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["千葉サンキュー","乱","ママMILK","射楽 ～スカトロ・AF専門～","千葉しろうと物語"],"myRanks":{"千葉人妻花壇":"ランク外"}}},"成田":{"シティヘブン":{"ranks":["成田デリヘル 『生パネル』伝説","成田人妻花壇","成田しろうと物語","gossip girl 成田店","成田富里 ちゃんこ"],"myRanks":{"成田人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["成田人妻最高級倶楽部","成田人妻花壇","人妻の秘密 成田店","脱がされたい人妻成田店","成田人妻講座"],"myRanks":{"成田人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻の秘密 成田店","成田人妻最高級倶楽部","最高級 エロエロ奥様 成田店","極上！三十路奥さま",""],"myRanks":{"成田人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["成田若妻即即サークル","千葉しろうと物語","ラブリータイム","極上！三十路奥さま","人妻とヤれるんです"],"myRanks":{"成田人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["成田若妻即即サークル","成田人妻花壇","成田人妻講座","極上！三十路奥さま","美しすぎる美熟女"],"myRanks":{"成田人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["人妻の秘密 成田店","成田人妻講座","成田若妻即即サークル","極上！三十路奥さま","成田人妻花壇"],"myRanks":{"成田人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"成田人妻花壇":"ランク外"}}},"木更津":{"シティヘブン":{"ranks":["木更津人妻花壇","人妻楼 木更津店","変態どっとこむ 即尺痴女伝説","即イキ淫乱クラブ木更津","kazusa素人学園木更津店"],"myRanks":{"木更津人妻花壇":"1位"}},"デリヘルタウン":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","日本妻","人妻楼 木更津店","脱がされたい人妻-木更津"],"myRanks":{"木更津人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["人妻楼 木更津店","木更津人妻花壇","脱がされたい人妻 木更津","木更津 魅惑の人妻",""],"myRanks":{"木更津人妻花壇":"2位"}},"デリヘルじゃぱん":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","クレオパトラ木更津","BI・MA・JO",""],"myRanks":{"木更津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["木更津人妻花壇","木更津 魅惑の人妻","脱がされたい人妻-木更津","遊び妻 木更津","昼顔妻"],"myRanks":{"木更津人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["木更津人妻花壇","脱がされたい人妻-木更津","人妻楼 木更津店","遊び妻 木更津","eros妻"],"myRanks":{"木更津人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"木更津人妻花壇":"ランク外"}}},"神栖":{"シティヘブン":{"ranks":["神栖レッドダイヤ","デリヘルコレクション【総本店】","茨城神栖ちゃんこ","Masquerade",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","スッキリ商事","Fairy","人妻最後の砦 神栖店"],"myRanks":{"神栖人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["神栖レッドダイヤ","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店","発情OLの淫らな残業"],"myRanks":{"神栖人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["Fairy","神栖人妻花壇","奥様宅配便 神栖支店","人妻とヤれるんです","熟女たちの宴"],"myRanks":{"神栖人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["神栖人妻花壇","奥様宅配便 神栖支店","人妻最後の砦 神栖店","Polaris神栖",""],"myRanks":{"神栖人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}}},"水戸":{"シティヘブン":{"ranks":["INFINITY GOLD","DIVAセカンドシーズン","水戸人妻花壇","高級回春＆Ｍ性感エステ 癒し娘診療所","茨城水戸ちゃんこ"],"myRanks":{"水戸人妻花壇":"3位"}},"デリヘルタウン":{"ranks":["キレイ計画in水戸","水戸人妻花壇","奥様特急  水戸・ひたちなか店","人妻最後の砦 水戸店","水戸人妻隊"],"myRanks":{"水戸人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["DIVAセカンドシーズン","INFINITY GOLD","水戸ちゃんこ","",""],"myRanks":{"水戸人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["水戸人妻花壇","水戸ちゃんこ","水戸人妻隊","キレイ計画in水戸","素人専門☆厳選サークル"],"myRanks":{"水戸人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["水戸人妻花壇","抑えきれない熟女","貪欲に生きる還暦熟女","若妻デリヘル  ～ルージュ～","人妻密会クラブ ～マンダリン～"],"myRanks":{"水戸人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["水戸人妻隊","水戸人妻花壇","人妻最後の砦 水戸店","人妻恋愛サークル","奥様宅配便 水戸支店"],"myRanks":{"水戸人妻花壇":"2位"}},"ぴゅあらば":{"ranks":["DIVAセカンドシーズン","水戸サンキュー","","",""],"myRanks":{"水戸人妻花壇":"ランク外"}}}},"google":{"西船橋":["バニラ （西船橋）","いちごなび","COCOA","バニラ （西船橋・デリ）","口コミ風俗情報局"],"錦糸町":["バニラ （錦糸町・亀戸）","口コミ風俗情報局","バニラ （錦糸町・デリ）","いちごなび","COCOA"],"沼津":["バニラ （沼津）","ガールズヘブン","いちごなび","メンズバニラ","はじ風"],"千葉":["バニラ （栄町）","いちごなび","バニラ （栄町・デリ）","メンズバニラ","口コミ風俗情報局"],"成田":["バニラ （成田）","バニラ （成田・デリ）","COCOA","メンズバニラ","ももジョブ"],"木更津":["バニラ （木更津・君津）","口コミ風俗情報局","COCOA","バニラ （木更津・デリ）","メンズバニラ"],"神栖":["バニラ （神栖）","口コミ風俗情報局","COCOA","バニラ （神栖・デリヘル）","メンズバニラ"],"水戸":["バニラ （水戸）","バニラ （水戸・デリヘル）","いちごなび","メンズバニラ","COCOA"]}},"2026-05-25":{"date":"2026-05-25","rankings":{"西船橋":{"シティヘブン":{"ranks":["西船人妻花壇","秘密倶楽部 凛 船橋本店","丸妻西船橋","One More 奥様 西船橋店","人妻の蜜 西船橋店"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"3位"}},"デリヘルタウン":{"ranks":["西船人妻花壇","One More 奥様 西船橋店","五十路マダムエクスプレス船橋店","人妻の蜜 西船橋店","人妻の秘密 船橋"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"6位"}},"風俗じゃぱん":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","秘密倶楽部 凛 船橋本店","人妻の秘密 西船橋店","完熟バナナ 千葉"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"7位"}},"デリヘルじゃぱん":{"ranks":["即イキ淫乱倶楽部 船橋店","しろうとファンタジー 船橋店","西船巨乳ぽっちゃり 乳神さま","Cleopatra",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}},"駅ちか人気！":{"ranks":["One More 奥様 西船橋店","西船人妻花壇","五十路マダムエクスプレス船橋店","西船橋 ムンムン熟女妻","丸妻西船橋"],"myRanks":{"西船人妻花壇":"2位","丸妻西船橋":"5位"}},"口コミ風俗情報局":{"ranks":["西船人妻花壇","完熟ばなな 千葉","丸妻西船橋","秘密倶楽部 凛 船橋本店","人妻の秘密船橋店"],"myRanks":{"西船人妻花壇":"1位","丸妻西船橋":"3位"}},"ぴゅあらば":{"ranks":["マネージャーがエロ過ぎて我慢できないからLOVE","玄関開けたら即パクおばさん","しろうとファンタジー 船橋店","",""],"myRanks":{"西船人妻花壇":"ランク外","丸妻西船橋":"ランク外"}}},"錦糸町":{"シティヘブン":{"ranks":["E+アイドルスクール","E+錦糸町","ウルトラハピネス","ウルトラブレイズ","One More 奥様 錦糸町"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"9位"}},"デリヘルタウン":{"ranks":["丸妻錦糸町","熟女の風俗最終章 錦糸町","出会い系人妻ネットワーク錦糸町","One More 奥様 錦糸町","One More 奥様 小岩店"],"myRanks":{"錦糸町人妻花壇":"11位","丸妻錦糸町":"1位"}},"風俗じゃぱん":{"ranks":["東京デザインリング","錦糸町人妻セレブリティ","熟女の風俗最終章 錦糸町","半熟ばなな錦糸町","無限発射!!奥様デリ急便"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"デリヘルじゃぱん":{"ranks":["東京デザインリング","半熟ばなな錦糸町","結婚三年目の刺激が欲しいM妻たち","ミセスの手ほどき 錦糸町店","ピンキー"],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}},"駅ちか人気！":{"ranks":["東京デザインリング","One More 奥様 錦糸町","錦糸町ミセスアロマ","丸妻錦糸町店","無限発射!!人妻デリ即配"],"myRanks":{"錦糸町人妻花壇":"12位","丸妻錦糸町":"4位"}},"口コミ風俗情報局":{"ranks":["熟女の風俗最終章 錦糸町","東京デザインリング","One More 奥様 錦糸町","丸妻錦糸町店","出会い系人妻ネットワーク 錦糸町～小岩編"],"myRanks":{"錦糸町人妻花壇":"15位","丸妻錦糸町":"4位"}},"ぴゅあらば":{"ranks":["BBW錦糸町店","One More 奥様 錦糸町","熟女の風俗最終章 錦糸町","",""],"myRanks":{"錦糸町人妻花壇":"ランク外","丸妻錦糸町":"ランク外"}}},"沼津":{"シティヘブン":{"ranks":["ほんつま沼津店","沼津人妻花壇","熟女の風俗最終章","",""],"myRanks":{"沼津人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["熟女の風俗最終章","沼津人妻花壇","こあくまな熟女たち","cuteなミセス","沼津人妻城"],"myRanks":{"沼津人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻デリヘル お蝶婦人","奥さまCafe","Tiara-ティアラ-","",""],"myRanks":{"沼津人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["沼津人妻花壇","サンキュー沼津店","奥さまCafe","熟女の風俗最終章","人妻デリヘル お蝶婦人"],"myRanks":{"沼津人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["奥様ブランド アニバーサリー","サンキュー沼津店","女商事～奥さま部署～あなた許して","欲しくて我慢できないドM妻","痴女の悪戯 ～ド淫乱な人妻専門店"],"myRanks":{"沼津人妻花壇":"9位"}},"口コミ風俗情報局":{"ranks":["艶美の人妻沼津店 ～濃厚オプション無双～","痴女の悪戯 ド淫乱な人妻専門店","人妻デリヘル お蝶婦人","ほんつま沼津店","沼津人妻花壇"],"myRanks":{"沼津人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["熟女の風俗最終章","こあくまな熟女たち","五十路マダム沼津店","沼津人妻花壇","ほんつま沼津店"],"myRanks":{"沼津人妻花壇":"4位"}},"バナナビ":{"ranks":["サンキュー沼津","サンボア","いちゃぷよ★ぽっちゃdoll","奥さまCafe","即会い奥様"],"myRanks":{"沼津人妻花壇":"ランク外"}}},"千葉":{"シティヘブン":{"ranks":["E+アイドルスクール千葉・栄町店","明日にときめけ！ にゃんにゃん学園in千葉","コスプレ戦隊 ヌケルンジャー千葉店","T-バックス","千葉サンキュー"],"myRanks":{"千葉人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["千葉人妻花壇","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","こあくまな熟女たち","秘密倶楽部 凛 千葉","ベストマダム"],"myRanks":{"千葉人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["千葉人妻花壇","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店","ママの婚活 CHIBA","外国人風俗宅急便"],"myRanks":{"千葉人妻花壇":"1位"}},"デリヘルじゃぱん":{"ranks":["千葉サンキュー","熟れたオカン","外国人風俗宅急便","即〇デリヘル","還暦の情欲 アラ還の溢れる欲望と愛液"],"myRanks":{"千葉人妻花壇":"ランク外"}},"駅ちか人気！":{"ranks":["千葉人妻花壇","千葉人妻セレブリティ","千葉boobs！ 巨乳専門店","ＤＩＥ−ＳＥＬ千葉店","E+アイドルスクール千葉・栄町店"],"myRanks":{"千葉人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["ママの婚活 CHIBA","千葉人妻花壇","こあくまな熟女たち","千葉人妻セレブリティ","素人妻御奉仕倶楽部 Hip’ｓ千葉駅前店"],"myRanks":{"千葉人妻花壇":"2位"}},"ぴゅあらば":{"ranks":["千葉サンキュー","乱","射楽 ～スカトロ・AF専門～","ママMILK","千葉人妻セレブリティ"],"myRanks":{"千葉人妻花壇":"ランク外"}}},"成田":{"シティヘブン":{"ranks":["成田デリヘル 『生パネル』伝説","成田人妻花壇","成田しろうと物語","gossip girl 成田店","成田富里 ちゃんこ"],"myRanks":{"成田人妻花壇":"2位"}},"デリヘルタウン":{"ranks":["成田人妻最高級倶楽部","成田人妻花壇","人妻の秘密 成田店","脱がされたい人妻成田店","成田人妻講座"],"myRanks":{"成田人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["人妻の秘密 成田店","最高級 エロエロ奥様 成田店","成田人妻最高級倶楽部","極上！三十路奥さま",""],"myRanks":{"成田人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["成田若妻即即サークル","千葉しろうと物語","ラブリータイム","極上！三十路奥さま","人妻とヤれるんです"],"myRanks":{"成田人妻花壇":"ランク外"}},"口コミ風俗情報局":{"ranks":["人妻の秘密 成田店","成田人妻講座","極上！三十路奥さま","成田若妻即即サークル","成田人妻花壇"],"myRanks":{"成田人妻花壇":"5位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"成田人妻花壇":"ランク外"}}},"木更津":{"シティヘブン":{"ranks":["木更津人妻花壇","即イキ淫乱クラブ木更津","変態どっとこむ 即尺痴女伝説","人妻楼 木更津店","kazusa素人学園木更津店"],"myRanks":{"木更津人妻花壇":"1位"}},"デリヘルタウン":{"ranks":["木更津人妻花壇","即イキ淫乱倶楽部 木更津","日本妻","人妻楼 木更津店","脱がされたい人妻-木更津"],"myRanks":{"木更津人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["人妻楼 木更津店","木更津人妻花壇","木更津 魅惑の人妻","脱がされたい人妻 木更津",""],"myRanks":{"木更津人妻花壇":"2位"}},"デリヘルじゃぱん":{"ranks":["即イキ淫乱倶楽部 木更津","木更津人妻花壇","クレオパトラ木更津","デジャブ","BI・MA・JO"],"myRanks":{"木更津人妻花壇":"2位"}},"駅ちか人気！":{"ranks":["木更津人妻花壇","木更津 魅惑の人妻","脱がされたい人妻-木更津","遊び妻 木更津","昼顔妻"],"myRanks":{"木更津人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["木更津人妻花壇","脱がされたい人妻-木更津","人妻楼 木更津店","遊び妻 木更津","eros妻"],"myRanks":{"木更津人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"木更津人妻花壇":"ランク外"}}},"神栖":{"シティヘブン":{"ranks":["神栖レッドダイヤ","デリヘルコレクション【総本店】","茨城神栖ちゃんこ","Masquerade",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルタウン":{"ranks":["神栖人妻花壇","スッキリ商事","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店"],"myRanks":{"神栖人妻花壇":"1位"}},"風俗じゃぱん":{"ranks":["神栖レッドダイヤ","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["神栖人妻花壇","ぽちゃらん神栖店","Fairy","人妻最後の砦 神栖店","発情OLの淫らな残業"],"myRanks":{"神栖人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["Fairy","神栖人妻花壇","奥様宅配便 神栖支店","人妻とヤれるんです","熟女たちの宴"],"myRanks":{"神栖人妻花壇":"2位"}},"口コミ風俗情報局":{"ranks":["神栖人妻花壇","奥様宅配便 神栖支店","人妻最後の砦 神栖店","Polaris神栖",""],"myRanks":{"神栖人妻花壇":"1位"}},"ぴゅあらば":{"ranks":["","","","",""],"myRanks":{"神栖人妻花壇":"ランク外"}}},"水戸":{"シティヘブン":{"ranks":["INFINITY GOLD","DIVAセカンドシーズン","水戸人妻花壇","高級回春＆Ｍ性感エステ 癒し娘診療所","奥様特急 水戸・ひたちなか店"],"myRanks":{"水戸人妻花壇":"3位"}},"デリヘルタウン":{"ranks":["キレイ計画in水戸","水戸人妻花壇","奥様特急  水戸・ひたちなか店","人妻最後の砦 水戸店","水戸人妻隊"],"myRanks":{"水戸人妻花壇":"2位"}},"風俗じゃぱん":{"ranks":["DIVAセカンドシーズン","INFINITY GOLD","水戸ちゃんこ","",""],"myRanks":{"水戸人妻花壇":"ランク外"}},"デリヘルじゃぱん":{"ranks":["水戸人妻花壇","水戸ちゃんこ","水戸人妻隊","キレイ計画in水戸","素人専門☆厳選サークル"],"myRanks":{"水戸人妻花壇":"1位"}},"駅ちか人気！":{"ranks":["水戸人妻花壇","抑えきれない熟女","貪欲に生きる還暦熟女","若妻デリヘル  ～ルージュ～","日本人妻専門店 ～やまとなでしこ～"],"myRanks":{"水戸人妻花壇":"1位"}},"口コミ風俗情報局":{"ranks":["水戸人妻隊","水戸人妻花壇","人妻最後の砦 水戸店","人妻恋愛サークル","奥様宅配便 水戸支店"],"myRanks":{"水戸人妻花壇":"2位"}},"ぴゅあらば":{"ranks":["水戸サンキュー","DIVAセカンドシーズン","","",""],"myRanks":{"水戸人妻花壇":"ランク外"}}}},"google":{"西船橋":["バニラ （西船橋）","バニラ （西船橋・デリ）","いちごなび","R-30","COCOA"],"錦糸町":["バニラ （錦糸町・亀戸）","口コミ風俗情報局","はじめての風俗バイト","バニラ （錦糸町・デリ）","COCOA"],"沼津":["バニラ （沼津）","ガールズヘブン","はじめての風俗バイト","R-30","いちごなび"],"千葉":["バニラ （栄町）","いちごなび","バニラ （栄町・デリ）","COCOA","口コミ風俗情報局"],"成田":["バニラ （成田）","バニラ （成田・デリ）","ももジョブ","COCOA","口コミ風俗情報局"],"木更津":["バニラ （木更津・君津）","口コミ風俗情報局","いちごなび","メンズバニラ","バニラ（デリ）"],"神栖":["バニラ （神栖）","口コミ風俗情報局","バニラ （神栖・デリヘル）","みっけ","COCOA"],"水戸":["バニラ （水戸）","バニラ （水戸・デリヘル）","COCOA","はじめての風俗バイト","FENIXJOB"]}}};
+function initializeData(){
+  try{
+    const ver=localStorage.getItem('rankingInitVer');
+    if(ver!=='v2'){
+      // 既存データを取得して週キーだけ残す
+      const ex=loadData();
+      const merged={};
+      // まずExcelデータを入れる
+      Object.keys(INITIAL_DATA).forEach(k=>merged[k]=INITIAL_DATA[k]);
+      // 既存データで上書き（手動入力分を保持）
+      Object.keys(ex).forEach(k=>{if(k!=='__initialVersion')merged[k]=ex[k];});
+      // 5/25は必ずExcelデータで上書き（修正対応）
+      if(INITIAL_DATA['2026-05-25'])merged['2026-05-25']=INITIAL_DATA['2026-05-25'];
+      saveToStorage(merged);
+      localStorage.setItem('rankingInitVer','v2');
+    }
+  }catch(e){
+    saveToStorage(INITIAL_DATA);
+    localStorage.setItem('rankingInitVer','v2');
+  }
+}
+
+
+// ===== 推移分析 =====
+
+function initTrendSelects(){
+  const areaEl=document.getElementById('trendAreaSelect');
+  const mediaEl=document.getElementById('trendMediaSelect');
+  if(!areaEl||!mediaEl) return;
+  areaEl.innerHTML=AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const area=areaEl.value||AREAS[0];
+  const mediaList=Object.keys(URLS[area]||{});
+  mediaEl.innerHTML=mediaList.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function renderTrend(){
+  const areaEl=document.getElementById('trendAreaSelect');
+  const mediaEl=document.getElementById('trendMediaSelect');
+  const modeEl=document.getElementById('trendModeSelect');
+  if(!areaEl) return;
+
+  // エリア変更時に媒体リストを更新
+  const area=areaEl.value||AREAS[0];
+  const mediaList=Object.keys(URLS[area]||{});
+  if(mediaEl){
+    const cur=mediaEl.value;
+    mediaEl.innerHTML=mediaList.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+  }
+  const media=mediaEl?mediaEl.value:mediaList[0];
+  const mode=modeEl?modeEl.value:'weekly';
+
+  const data=loadData();
+  const allWeeks=Object.keys(data).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  if(!allWeeks.length){
+    document.getElementById('trendContent').innerHTML='<div class="no-data">データがありません。</div>';
+    return;
+  }
+
+  // 週次データ収集
+  const weeklyData=allWeeks.map(wk=>{
+    const md=data[wk]?.rankings?.[area]?.[media];
+    return {wk, ranks:md?.ranks||[], myRanks:md?.myRanks||{}};
+  });
+
+  // 競合店抽出：各媒体の平均順位が高い（数値が小さい）上位2店舗
+  // 正規化キーで店舗をまとめる
+  const shopScores={};
+  const shopNameMap={}; // 正規化キー→代表店舗名
+  weeklyData.forEach(({ranks})=>{
+    ranks.forEach((shop,i)=>{
+      if(!shop) return;
+      const key=normalizeShopName(shop);
+      if(!shopScores[key]){shopScores[key]={total:0,count:0}; shopNameMap[key]=shop;}
+      shopScores[key].total+=(i+1);
+      shopScores[key].count++;
+    });
+  });
+  // 自店を除外
+  const myStores=MY_STORES[area]||[];
+  const rivals=Object.entries(shopScores)
+    .filter(([key])=>!myStores.some(ms=>isSameShop(ms,shopNameMap[key])))
+    .map(([key,v])=>({shop:shopNameMap[key],avg:v.total/v.count,count:v.count}))
+    .sort((a,b)=>a.avg-b.avg||b.count-a.count)
+    .slice(0,2)
+    .map(v=>v.shop);
+
+  // 月次集計の場合：月曜日基準で月ごとにまとめる
+  let periods=[];
+  if(mode==='monthly'){
+    const monthMap={};
+    weeklyData.forEach(({wk,ranks,myRanks})=>{
+      const ym=wk.slice(0,7); // YYYY-MM
+      if(!monthMap[ym]) monthMap[ym]={wk:ym,ranksList:[],myRanksList:{}};
+      monthMap[ym].ranksList.push(ranks);
+      myStores.forEach(s=>{
+        if(!monthMap[ym].myRanksList[s]) monthMap[ym].myRanksList[s]=[];
+        const r=myRanks[s];
+        if(r){const n=parseInt(r);if(!isNaN(n))monthMap[ym].myRanksList[s].push(n);}
+      });
+    });
+    periods=Object.entries(monthMap).sort().map(([ym,v])=>{
+      // 月平均順位を計算
+      const avgRanks={};
+      [...myStores,...rivals].forEach(shop=>{
+        if(myStores.includes(shop)){
+          const arr=v.myRanksList[shop]||[];
+          avgRanks[shop]=arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10:null;
+        } else {
+          const scores=[];
+          v.ranksList.forEach(ranks=>{const idx=ranks.indexOf(shop);if(idx>=0)scores.push(idx+1);});
+          avgRanks[shop]=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;
+        }
+      });
+      return {label:ym,avgRanks};
+    });
+  } else {
+    periods=weeklyData.map(({wk,ranks,myRanks})=>{
+      const avgRanks={};
+      myStores.forEach(s=>{
+        const r=myRanks[s];
+        if(r){const n=parseInt(r);avgRanks[s]=isNaN(n)?null:n;}else avgRanks[s]=null;
+      });
+      rivals.forEach(shop=>{
+        const idx=ranks.indexOf(shop);
+        avgRanks[shop]=idx>=0?idx+1:null;
+      });
+      return {label:wk.slice(5),avgRanks};
+    });
+  }
+
+  // 色定義
+  const COLORS={};
+  const palette=['#58a6ff','#3fb950','#f78166','#d2a8ff','#ffd700','#2dd4bf'];
+  const allShops=[...myStores,...rivals];
+  allShops.forEach((s,i)=>COLORS[s]=palette[i%palette.length]);
+
+  // SVGグラフ描画
+  const svgW=680, svgH=280, padL=50, padR=20, padT=20, padB=60;
+  const chartW=svgW-padL-padR;
+  const chartH=svgH-padT-padB;
+  const maxRank=6;
+
+  const xStep=periods.length>1?chartW/(periods.length-1):chartW/2;
+
+  function xPos(i){return padL+(periods.length>1?i*xStep:chartW/2);}
+  function yPos(rank){return padT+((rank-1)/(maxRank-1))*chartH;}
+
+  let svg=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${svgW}px;background:#fff;border-radius:8px;border:1px solid #d0d0d0;">`;
+
+  // グリッド線（1〜5位）
+  for(let r=1;r<=5;r++){
+    const y=yPos(r);
+    svg+=`<line x1="${padL}" y1="${y}" x2="${svgW-padR}" y2="${y}" stroke="#e0e0e0" stroke-width="0.5"/>`;
+    svg+=`<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#888">${r}位</text>`;
+  }
+
+  // X軸ラベル
+  periods.forEach(({label},i)=>{
+    const x=xPos(i);
+    svg+=`<text x="${x}" y="${svgH-padB+16}" text-anchor="middle" font-size="9" fill="#555">${label}</text>`;
+  });
+
+  // 各店舗の折れ線
+  allShops.forEach(shop=>{
+    const color=COLORS[shop];
+    const points=periods.map(({avgRanks},i)=>({x:xPos(i),y:avgRanks[shop]?yPos(avgRanks[shop]):null}));
+    // 線
+    let d='';
+    points.forEach((p,i)=>{
+      if(p.y===null) return;
+      if(d===''||points[i-1]?.y===null) d+=`M${p.x},${p.y}`;
+      else d+=`L${p.x},${p.y}`;
+    });
+    if(d) svg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    // 点
+    points.forEach(p=>{
+      if(p.y===null) return;
+      const isMyStore=myStores.includes(shop);
+      svg+=`<circle cx="${p.x}" cy="${p.y}" r="${isMyStore?5:4}" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+  });
+
+  // 凡例
+  const legendY=svgH-padB+32;
+  let legendX=padL;
+  allShops.forEach(shop=>{
+    const isMyStore=myStores.includes(shop);
+    const label=isMyStore?`★${shop}`:`${shop}（競合）`;
+    svg+=`<rect x="${legendX}" y="${legendY}" width="10" height="10" fill="${COLORS[shop]}" rx="2"/>`;
+    svg+=`<text x="${legendX+13}" y="${legendY+9}" font-size="9" fill="#333">${label}</text>`;
+    legendX+=Math.min(label.length*7+20, 180);
+  });
+
+  svg+=`</svg>`;
+
+  // テーブル
+  let table=`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;">`;
+  table+=`<thead><tr style="background:#1a3a6e;color:#fff;">`;
+  table+=`<th style="padding:6px 8px;text-align:left;">期間</th>`;
+  allShops.forEach(shop=>{
+    const isMyStore=myStores.includes(shop);
+    table+=`<th style="padding:6px 8px;text-align:center;${isMyStore?'background:#1a5276;':''}">${isMyStore?'★':''} ${shop}</th>`;
+  });
+  table+=`</tr></thead><tbody>`;
+  periods.forEach(({label,avgRanks},idx)=>{
+    const bg=idx%2===0?'#f9f9f9':'#fff';
+    table+=`<tr style="background:${bg};">`;
+    table+=`<td style="padding:5px 8px;font-weight:600;color:#333;">${label}</td>`;
+    allShops.forEach(shop=>{
+      const r=avgRanks[shop];
+      const isMyStore=myStores.includes(shop);
+      const bg2=isMyStore?'rgba(26,110,216,0.06)':'';
+      const val=r?`${r}位`:'−';
+      table+=`<td style="padding:5px 8px;text-align:center;background:${bg2};color:${r&&r<=2?'#d93025':r&&r<=3?'#e3a517':'#333'};">${val}</td>`;
+    });
+    table+=`</tr>`;
+  });
+  table+=`</tbody></table>`;
+
+  // 競合説明
+  const rivalDesc=rivals.length?
+    `<div style="font-size:10px;color:#555;margin-bottom:8px;">競合（自動抽出）：${rivals.map(r=>`<strong>${r}</strong>`).join('、')}　※平均順位が最も高い上位2店舗</div>`
+    :'<div style="font-size:10px;color:#888;margin-bottom:8px;">競合店データ不足（データが蓄積されると自動抽出されます）</div>';
+
+  const titleLabel=mode==='monthly'?'月次平均順位推移':'週次順位推移';
+  // Google検索順位の推移
+  const googlePeriods = mode==='monthly' ? (() => {
+    const monthMap={};
+    allWeeks.forEach(wk=>{
+      const ym=wk.slice(0,7);
+      const gd=data[wk]?.google?.[area]||[];
+      if(!monthMap[ym])monthMap[ym]={label:ym,sites:[]};
+      monthMap[ym].sites.push(gd);
+    });
+    return Object.values(monthMap).map(({label,sites})=>({label,gd:sites[Math.floor(sites.length/2)]||[]}));
+  })() : allWeeks.map(wk=>({label:wk.slice(5),gd:data[wk]?.google?.[area]||[]}));
+
+  // Google検索SVGグラフ
+  const gSites=[...new Set(googlePeriods.flatMap(p=>p.gd).filter(s=>s))].slice(0,5);
+  const gColors=['#1a6ed8','#e3a517','#d93025','#1e8a3a','#7c3aed'];
+  let gSvg=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${svgW}px;background:#fff;border-radius:8px;border:1px solid #d0d0d0;">`;
+  for(let r=1;r<=5;r++){
+    const y=yPos(r);
+    gSvg+=`<line x1="${padL}" y1="${y}" x2="${svgW-padR}" y2="${y}" stroke="#e0e0e0" stroke-width="0.5"/>`;
+    gSvg+=`<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#888">${r}位</text>`;
+  }
+  googlePeriods.forEach(({label},i)=>{
+    gSvg+=`<text x="${xPos(i)}" y="${svgH-padB+16}" text-anchor="middle" font-size="9" fill="#555">${label}</text>`;
+  });
+  gSites.forEach((site,si)=>{
+    const color=gColors[si%gColors.length];
+    let d='';
+    googlePeriods.forEach(({gd},i)=>{
+      const rank=gd.findIndex(s=>isSameShop(s,site));
+      if(rank===-1) return;
+      const x=xPos(i),y=yPos(rank+1);
+      d+=d===''?`M${x},${y}`:`L${x},${y}`;
+    });
+    if(d) gSvg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2"/>`;
+    googlePeriods.forEach(({gd},i)=>{
+      const rank=gd.findIndex(s=>isSameShop(s,site));
+      if(rank===-1) return;
+      gSvg+=`<circle cx="${xPos(i)}" cy="${yPos(rank+1)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+  });
+  // Google凡例
+  let gLegendX=padL;
+  gSites.forEach((site,si)=>{
+    const color=gColors[si%gColors.length];
+    gSvg+=`<rect x="${gLegendX}" y="${svgH-padB+32}" width="10" height="10" fill="${color}" rx="2"/>`;
+    gSvg+=`<text x="${gLegendX+13}" y="${svgH-padB+41}" font-size="9" fill="#333">${site}</text>`;
+    gLegendX+=Math.min(site.length*7+20,200);
+  });
+  gSvg+=`</svg>`;
+
+  // Google検索テーブル
+  let gTable=`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;">
+    <thead><tr style="background:#1e5a9e;color:#fff;">
+      <th style="padding:6px 8px;text-align:left;">期間</th>`;
+  for(let i=1;i<=5;i++) gTable+=`<th style="padding:6px 8px;text-align:center;">${i}位</th>`;
+  gTable+=`</tr></thead><tbody>`;
+  googlePeriods.forEach(({label,gd},idx)=>{
+    const bg=idx%2===0?'#f9f9f9':'#fff';
+    gTable+=`<tr style="background:${bg};"><td style="padding:5px 8px;font-weight:600;">${label}</td>`;
+    for(let i=0;i<5;i++) gTable+=`<td style="padding:5px 8px;text-align:center;font-size:11px;">${gd[i]||'−'}</td>`;
+    gTable+=`</tr>`;
+  });
+  gTable+=`</tbody></table>`;
+
+  const kw=GOOGLE_KEYWORDS[area]||'';
+
+  document.getElementById('trendContent').innerHTML=`
+    <div style="background:#fff;border:1px solid #d0d0d0;border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">📈 ${area} / ${media} ${titleLabel}</div>
+      ${rivalDesc}
+      ${svg}
+      ${table}
+    </div>
+    <div style="background:#fff;border:1px solid #d0d0d0;border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#1e5a9e;margin-bottom:8px;">🔍 ${area} / Googleワード検索順位 ${titleLabel}（${kw}）</div>
+      ${gSites.length?gSvg:'<div style="color:#888;font-size:11px;">Google検索データがありません</div>'}
+      ${gSites.length?gTable:''}
+    </div>`;
+}
+
+
+// ===== 店舗名正規化（表記ゆれ吸収）=====
+function normalizeShopName(s){
+  if(!s) return '';
+  let r=s.trim();
+  // 全角英数字→半角
+  r=r.replace(/[Ａ-Ｚａ-ｚ０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));
+  // 全角スペース→半角
+  r=r.replace(/\u3000/g,' ');
+  // 連続スペース→1つ
+  r=r.replace(/\s+/g,' ');
+  // ハイフン系統一（全角ハイフン・マイナス・長音符など→半角ハイフン）
+  r=r.replace(/[－ｰ‐‑‒–—―]/g,'-');
+  // 全角括弧→半角
+  r=r.replace(/（/g,'(').replace(/）/g,')');
+  // 全角「・」はそのまま（店名に使われる）
+  // 大文字統一
+  r=r.toUpperCase();
+  return r.trim();
+}
+
+function isSameShop(a,b){
+  return normalizeShopName(a)===normalizeShopName(b);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
+</script>
+
+<script src="ranking_data.js"></script>
+<script>
+window.addEventListener('load', function(){
+  const status = document.getElementById('ghStatus');
+  if(typeof window.RANKING_DATA !== 'undefined'){
+    const clean = {};
+    Object.keys(window.RANKING_DATA).forEach(function(k){
+      if(/^\d{4}-\d{2}-\d{2}$/.test(k)) clean[k] = window.RANKING_DATA[k];
+    });
+    localStorage.setItem('rankingDataV8', JSON.stringify(clean));
+    if(window.updateWeekSelects) window.updateWeekSelects();
+    if(window.renderDashboard) window.renderDashboard();
+    if(status) status.textContent = '✅ 最新データ表示中';
+  } else {
+    if(status) status.textContent = '❌ データ読み込み失敗';
+  }
+});
+</script>
+</body>
+</html>
