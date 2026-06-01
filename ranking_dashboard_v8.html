@@ -141,10 +141,10 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
   </div>
   <div class="header-right">
     <div class="date-display" id="currentDate"></div>
-    
-    
-    
-    
+    <button class="btn btn-orange" onclick="openAllUrls()">🔗 全URL一括</button>
+    <button class="btn btn-purple" onclick="window.print()">🖨️ PDF印刷</button>
+    <button class="btn btn-success" onclick="exportCsv()">📥 CSV</button>
+    <button class="btn btn-primary" onclick="showTab('input')">✏️ 入力</button>
   </div>
 </header>
 <div class="main">
@@ -188,9 +188,9 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
     
     <div class="week-bar">
       <label>集計週（月曜日）：</label><input type="date" id="inputWeekDate" onchange="renderInputFormContent()">
-      
-      
-      
+      <button class="btn btn-ghost" onclick="copyFromPrevWeek()">📋 前週コピー</button>
+      <button class="btn btn-ghost" onclick="clearForm()">🗑️ クリア</button>
+      <button class="btn btn-primary" onclick="saveData()">💾 手入力を保存</button>
     </div>
     <div class="input-area-tabs" id="inputAreaTabs"></div>
     <div id="inputFormContent"></div>
@@ -200,14 +200,14 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
   <div id="view-google" class="hidden">
     <div class="week-bar">
       <label>集計週（月曜日）：</label><input type="date" id="googleInputWeekDate" onchange="renderGoogleSection()">
-      
-      
-      
+      <button class="btn btn-ghost" onclick="copyGoogleFromPrevWeek()">📋 前週コピー</button>
+      <button class="btn btn-ghost" onclick="clearGoogleForm()">🗑️ クリア</button>
+      <button class="btn btn-primary" onclick="saveGoogleData()">💾 手入力を保存</button>
     </div>
     <div class="google-section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
         <div class="section-title">✏️ 入力フォーム　<span style="font-size:10px;color:var(--text2);font-weight:400;">各エリアの検索ワードで調べた上位5サイトを入力してください</span></div>
-        
+        <button class="btn btn-purple" onclick="pasteGoogleBulk()">📋 全エリアまとめて貼り付け</button><span style="font-size:10px;color:var(--text2);margin-left:6px;">※ 貼り付けと同時に自動保存されます</span>
       </div>
       <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">💡 Excelで該当週の1位〜5位を全エリア分（8列×5行）選択してCtrl+C → 「📋 全エリアまとめて貼り付け」</div>
       <div class="google-area-grid" id="googleInputGrid"></div>
@@ -502,7 +502,7 @@ function renderInputFormContent(){
   let h=`<div class="input-section">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
     <div class="section-title">📺 ${area}：各媒体店舗ランキング</div>
-    
+    <button class="btn btn-purple" onclick="pasteBulk('${area}')">📋 全媒体まとめて貼り付け</button><span style="font-size:10px;color:var(--text2);margin-left:6px;">※ 貼り付けと同時に自動保存されます</span>
   </div>
   <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
     💡 Excelでこのエリアの日付行の次（1位〜自店順位まで）を全列選択してCtrl+C → 「📋 全媒体まとめて貼り付け」
@@ -1215,25 +1215,6 @@ function isSameShop(a,b){
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
-</script>
-
-<script src="ranking_data.js"></script>
-<script>
-window.addEventListener('load', function(){
-  const status = document.getElementById('ghStatus');
-  if(typeof window.RANKING_DATA !== 'undefined'){
-    const clean = {};
-    Object.keys(window.RANKING_DATA).forEach(function(k){
-      if(/^\d{4}-\d{2}-\d{2}$/.test(k)) clean[k] = window.RANKING_DATA[k];
-    });
-    localStorage.setItem('rankingDataV8', JSON.stringify(clean));
-    if(window.updateWeekSelects) window.updateWeekSelects();
-    if(window.renderDashboard) window.renderDashboard();
-    if(status) status.textContent = '✅ 最新データ表示中';
-  } else {
-    if(status) status.textContent = '❌ データ読み込み失敗';
-  }
-});
 </script>
 </body>
 </html>
