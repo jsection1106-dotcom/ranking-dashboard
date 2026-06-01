@@ -348,11 +348,11 @@ function renderDashboard(){
       for(let i=0;i<5;i++){
         const shop=ranks[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
         const isEmptyShop=!shop||/^[-ー－\s]*$/.test(shop);let df='';if(cd&&shop&&!isEmptyShop){const pi=cr.findIndex(s=>isSameShop(s,shop));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
-        // 自店以外で順位変動がある場合に背景色
+        // 自店以外で順位変動がある場合に背景色（ハイフンは除外）
         let rowChanged=false;
-        if(cd&&shop){
-          const pi=cr.indexOf(shop);
-          if(pi!==-1&&pi!==i) rowChanged=true; // 順位が変わっている
+        if(cd&&shop&&!isEmptyShop){
+          const pi=cr.findIndex(s=>isSameShop(s,shop));
+          if(pi!==-1&&pi!==i) rowChanged=true;
         }
         const trClass=rowChanged?'rank-changed':'';
         const shopDisplay=shop&&shop.replace(/^[-ー－\s]+$/,'')?shop:'';h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shopDisplay||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
