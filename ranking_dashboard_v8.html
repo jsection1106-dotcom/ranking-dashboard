@@ -355,7 +355,7 @@ function renderDashboard(){
           if(pi!==-1&&pi!==i) rowChanged=true; // 順位が変わっている
         }
         const trClass=rowChanged?'rank-changed':'';
-        h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shop||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+        const shopDisplay=shop&&shop.replace(/^[-ー－\s]+$/,'')?shop:'';h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shopDisplay||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
       }
       for(const s of MY_STORES[area]||[]){
         const mr=my[s]||'';if(!mr)continue;
