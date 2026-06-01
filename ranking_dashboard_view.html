@@ -1217,22 +1217,30 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
 </script>
 
-<script src="ranking_data.js"></script>
+<script>
+// 閲覧専用：ranking_data.jsからデータを読み込む
+// Tampermonkeyの上書きを防ぐためloadDataとsaveToStorageを先に定義
+window._viewOnly = true;
+</script>
+<script src="ranking_data.js?t=1780307300562125375"></script>
 <script>
 window.addEventListener('load', function(){
   const status = document.getElementById('ghStatus');
-  if(typeof window.RANKING_DATA !== 'undefined'){
-    const clean = {};
-    Object.keys(window.RANKING_DATA).forEach(function(k){
-      if(/^\d{4}-\d{2}-\d{2}$/.test(k)) clean[k] = window.RANKING_DATA[k];
-    });
-    localStorage.setItem('rankingDataV8', JSON.stringify(clean));
-    if(window.updateWeekSelects) window.updateWeekSelects();
-    if(window.renderDashboard) window.renderDashboard();
-    if(status) status.textContent = '✅ 最新データ表示中';
-  } else {
-    if(status) status.textContent = '❌ データ読み込み失敗';
-  }
+  // Tampermonkeyが動いていても閲覧専用モードを優先
+  setTimeout(function(){
+    if(typeof window.RANKING_DATA !== 'undefined'){
+      const clean = {};
+      Object.keys(window.RANKING_DATA).forEach(function(k){
+        if(/^\d{4}-\d{2}-\d{2}$/.test(k)) clean[k] = window.RANKING_DATA[k];
+      });
+      localStorage.setItem('rankingDataV8', JSON.stringify(clean));
+      if(window.updateWeekSelects) window.updateWeekSelects();
+      if(window.renderDashboard) window.renderDashboard();
+      if(status) status.textContent = '✅ 最新データ表示中（閲覧専用）';
+    } else {
+      if(status) status.textContent = '❌ データ読み込み失敗';
+    }
+  }, 1500);
 });
 </script>
 </body>
