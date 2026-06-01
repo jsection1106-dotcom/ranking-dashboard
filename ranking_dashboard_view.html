@@ -137,7 +137,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent);}
 <header>
   <div class="header-left">
     <h1>📊 各媒体、検索ランキング（週次）</h1>
-    <p>媒体ランキング＆Google検索 週次集計システム　<span id="ghStatus" style="color:var(--accent3);font-size:9px;"></span></p>
+    <p>媒体ランキング＆Google検索 週次集計システム　<span id="ghStatus" style="color:var(--accent3);font-size:9px;"></span>　</p>
   </div>
   <div class="header-right">
     <div class="date-display" id="currentDate"></div>
@@ -347,15 +347,15 @@ function renderDashboard(){
       h+=`<div class="media-block"><div class="media-head">${media}${url?` <a href="${url}" target="_blank" class="media-url-btn">🔗</a>`:''}</div><table class="rank-table">`;
       for(let i=0;i<5;i++){
         const shop=ranks[i]||'';const cls=['r1','r2','r3','r4','r5'][i];
-        let df='';if(cd&&shop){const pi=cr.indexOf(shop);if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
-        // 自店以外で順位変動がある場合に背景色
+        const isEmptyShop=!shop||/^[-ー－\s]*$/.test(shop);let df='';if(cd&&shop&&!isEmptyShop){const pi=cr.findIndex(s=>isSameShop(s,shop));if(pi===-1)df='<span class="diff-new">★新</span>';else if(pi>i)df=`<span class="diff-up">▲${pi-i}</span>`;else if(pi<i)df=`<span class="diff-down">▼${i-pi}</span>`;else df='<span class="diff-same">－</span>';}
+        // 自店以外で順位変動がある場合に背景色（ハイフンは除外）
         let rowChanged=false;
-        if(cd&&shop){
-          const pi=cr.indexOf(shop);
-          if(pi!==-1&&pi!==i) rowChanged=true; // 順位が変わっている
+        if(cd&&shop&&!isEmptyShop){
+          const pi=cr.findIndex(s=>isSameShop(s,shop));
+          if(pi!==-1&&pi!==i) rowChanged=true;
         }
         const trClass=rowChanged?'rank-changed':'';
-        h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shop||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
+        const shopDisplay=shop&&shop.replace(/^[-ー－\s]+$/,'')?shop:'';h+=`<tr class="${trClass}"><td class="rank-num ${cls}">${i+1}</td><td class="shop-name">${shopDisplay||'<span style="color:var(--border)">—</span>'}${df}</td></tr>`;
       }
       for(const s of MY_STORES[area]||[]){
         const mr=my[s]||'';if(!mr)continue;
@@ -427,7 +427,11 @@ function applyBulkPaste(area, text){
     const row = dataRows[ri];
     mediaList.forEach((media,ci)=>{
       const el=document.getElementById(`rank_${area}_${media}_${ri+1}`);
-      if(el && ci<row.length) el.value=row[ci]||'';
+      if(el && ci<row.length){
+        el.value=row[ci]||'';
+        // 自店順位を自動反映
+        if(el.value) autoFillMyRank(area,media,ri+1,el.value);
+      }
     });
     rankCount++;
   }
@@ -462,6 +466,33 @@ function applyBulkPaste(area, text){
   } else {
     showToast(`✅ ${area}：貼り付けました（集計週を選択して保存してください）`);
   }
+}
+
+
+// ===== 自店順位自動反映 =====
+function autoFillMyRank(area, media, rank, shopName){
+  const stores = MY_STORES[area]||[];
+  stores.forEach(store=>{
+    const key = store.replace(/\s/g,'_');
+    const el = document.getElementById(`myrank_${area}_${media}_${key}`);
+    if(!el) return;
+    // 正規化して比較
+    if(shopName && isSameShop(shopName, store)){
+      el.value = rank + '位';
+    } else {
+      // この媒体の他の入力欄に自店名がなければクリア
+      let found = false;
+      for(let r=1;r<=5;r++){
+        const rankEl = document.getElementById(`rank_${area}_${media}_${r}`);
+        if(rankEl && isSameShop(rankEl.value, store)){
+          el.value = r + '位';
+          found = true;
+          break;
+        }
+      }
+      if(!found && el.value === rank + '位') el.value = '';
+    }
+  });
 }
 
 function pasteFromClipboard(area, media){
@@ -515,7 +546,7 @@ function renderInputFormContent(){
       <div class="input-media-title">
         <span>${media}${url?` <a href="${url}" target="_blank" class="media-url-btn">🔗</a>`:''}</span>
       </div>`;
-    for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名"></div>`;
+    for(let r=1;r<=5;r++)h+=`<div class="input-row"><span class="rank-label">${r}位</span><input type="text" id="rank_${area}_${media}_${r}" value="${esc(sr[r-1]||'')}" placeholder="店舗名" oninput="autoFillMyRank('${area}','${media}',${r},this.value)"></div>`;
     const stores=MY_STORES[area]||[];
     if(stores.length){h+=`<div class="divider"></div>`;for(const s of stores){const k=s.replace(/\s/g,'_');h+=`<div class="input-row"><span class="my-store-label" style="width:90px;min-width:90px;font-size:9px;color:var(--accent);white-space:nowrap;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;" title="${s}">${s}</span><input type="text" class="my-store-input" id="myrank_${area}_${media}_${k}" value="${esc(sm[s]||'')}" placeholder="${s}の順位（例：3位）"></div>`;}}
     h+=`</div>`;
@@ -1217,16 +1248,10 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 initializeData();initCurrentDate();updateWeekSelects();renderDashboard();initTrendSelects();
 </script>
 
-<script>
-// 閲覧専用：ranking_data.jsからデータを読み込む
-// Tampermonkeyの上書きを防ぐためloadDataとsaveToStorageを先に定義
-window._viewOnly = true;
-</script>
-<script src="ranking_data.js?t=1780307300562125375"></script>
+<script src="ranking_data.js?t=1780313384"></script>
 <script>
 window.addEventListener('load', function(){
   const status = document.getElementById('ghStatus');
-  // Tampermonkeyが動いていても閲覧専用モードを優先
   setTimeout(function(){
     if(typeof window.RANKING_DATA !== 'undefined'){
       const clean = {};
