@@ -3,6 +3,9 @@ $ErrorActionPreference = 'Continue'
 Set-Location -LiteralPath $PSScriptRoot
 $log = Join-Path $PSScriptRoot 'run_weekly.log'
 Start-Transcript -Path $log -Force | Out-Null
+# 認証画面などで止まったまま終わらないよう、入力待ちにせず即エラーにする
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'never'
 try {
     git pull --rebase -q
     & 'C:\Users\jurassic\AppData\Local\Programs\Python\Python312\python.exe' fetch_rankings.py
